@@ -6,12 +6,12 @@ import java.util.regex.*;
  * This class represents a data member in S Java files.
  * @param <T> The data-member's type.
  */
-public class Variable {
-	String myName, myType;
-	Object myVal;
+public class Variable<T> {
+	String myName;
+	T myVal;
+	boolean wasInit = false, isFinal = false;
 	
-	boolean wasInit = false;
-	private static final String NAME_STR_REGEX = "(?:(?:[A-Za-z]\\w*)|(?:_\\w+))",
+	private static final String NAME_STR_REGEX = "(?:(?:[A-Za-z])|(?:_\\w))\\w*",
 			TYPE_STR_REGEX = "^[A-Za-z]+",
 			ASSIGN_STR_REGEX = "=\\s*[^,]+", LINE_END_REGEX = ";$",
 			INIT_STR_REGEX = "(?:" + NAME_STR_REGEX + ")\\s*" + "(?:" + ASSIGN_STR_REGEX + ")?",
@@ -19,35 +19,30 @@ public class Variable {
 			"\\s*(?:,\\s*" + INIT_STR_REGEX + ")*" + "\\s*" + LINE_END_REGEX;
 	public static final Pattern initPattern = Pattern.compile(INIT_STR_REGEX),
 			 					typePattern = Pattern.compile(TYPE_STR_REGEX),
-			 					linePattern = Pattern.compile(LINE_STR_REGEX);
-	private static final int TYPE_ARG = 0, NAME_ARG = 1, ASSIGN_ARG = 2, VALUE_ARG = 3, MIN_ARGS = 2;
+			 					linePattern = Pattern.compile(LINE_STR_REGEX),
+			 					namePattern = Pattern.compile(NAME_STR_REGEX),
+			 					assignPattern = Pattern.compile(ASSIGN_STR_REGEX);
 	private static final String[] validTypes = {"String", "int", "double", "boolean"};
 	
-	/**
-	 * @param newName The name this data members will hold.
-	 * @throws VariableException 
-	 */
-	public Variable(String variableLine) throws VariableException {
 	
-		
+	public Variable(String newName) throws VariableException {
+		if (!namePattern.matcher(newName).find())
+			throw new BadVariableNameException(newName);
+		myName = newName;
 	}
 	
-	private static boolean isValidType(String aType) {
-		for (String type : validTypes) {
-			if (type.equals(aType))
-				return true;
-		}
-		return false;
+	public Variable(String newName, T newVal) throws VariableException {
+		this(newName);
+		this.setVal(newVal);
 	}
 	
-	private static boolean isValidName(String aName) {
-		Matcher matcher = namePattern.matcher(aName);
-		return matcher.find();
+	public boolean setFinal() {
+		isFinal = wasInit;
+		return isFinal;
 	}
 	
-	public static boolean isVariableInitLine(String line) {
-		Matcher match = linePattern.matcher(line);
-		return match.matches();
+	public void setVal(T newVal) {
+		myVal = newVal;
+		wasInit = true;
 	}
-	
 }
