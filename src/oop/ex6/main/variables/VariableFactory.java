@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.regex.*;
 
 public class VariableFactory {
-	private static final String VARIABLE_ASSIGNMENT = "(\\w+)\\s*(?:=\\s*(.+))?", LINE_END = ";$",
+	private static final String VARIABLE_ASSIGNMENT = "(\\w+)\\s*(?:=\\s*(.+))?", LINE_END = "\\s*;\\s*$",
 								ARGS_SEPERATOR = "\\s*,\\s*";
 	private static Pattern assignPattern = Pattern.compile(VARIABLE_ASSIGNMENT),
 						   lineEndPattern = Pattern.compile(LINE_END);
@@ -16,7 +16,7 @@ public class VariableFactory {
 	 * @return True if the first word is 'final' false otherwise.
 	 */
 	private static boolean isFinal(String lineStr) {
-		String lineStart = isMatch(VariableType.getPattern(), lineStr);
+		String lineStart = isMatch(VariableType.getTypePattern(), lineStr);
 		if (lineStart != null)
 			return lineStart.equals(VariableType.FINAL.toString());
 		return false;
@@ -50,7 +50,8 @@ public class VariableFactory {
 			throw new BadVariableLineException(lineStr);
 		}
 		lineStr = lineStr.substring(0, lineStr.length() - 1);
-		String typeStr = isMatch(VariableType.getPattern(),lineStr); VariableType type = null;
+		String typeStr = isMatch(VariableType.getTypePattern(),lineStr); 
+		VariableType type = null;
 		if (typeStr == null) 
 			throw new VariableException();
 		for (VariableType t : VariableType.values()) {

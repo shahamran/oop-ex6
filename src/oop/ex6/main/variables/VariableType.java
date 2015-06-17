@@ -8,8 +8,9 @@ import java.util.regex.Pattern;
  * @author Ran
  *
  */
-public enum VariableType {INT("int"),DOUBLE("double"),CHAR("char","\\s*'(.*)'\\s*"),
-						  STRING("String","\\s*\"(.*)\"\\s*"),BOOLEAN("boolean"),FINAL("final");
+public enum VariableType {INT("int","\\s*(\\d+)\\s*"),DOUBLE("double","\\s*(-?\\d+(?:\\.\\d+))\\s*"),
+						  CHAR("char","\\s*'(.)'\\s*"), STRING("String","\\s*\"(.*)\"\\s*"),
+						  BOOLEAN("boolean","\\s*(true|false)\\s*"),FINAL("final");
 	String varStr;
 	static final Pattern typePattern = Pattern.compile("(^[A-Za-z]+)");
 	private Pattern myPattern = null;
@@ -31,7 +32,7 @@ public enum VariableType {INT("int"),DOUBLE("double"),CHAR("char","\\s*'(.*)'\\s
 	 * @return The regex pattern to extract the type argument from a line.
 	 * Use matcher.group(1) to get the string value.
 	 */
-	public static Pattern getPattern() {
+	public static Pattern getTypePattern() {
 		return typePattern;
 	}
 	/**

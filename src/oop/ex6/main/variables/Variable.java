@@ -72,39 +72,15 @@ public class Variable {
 	public void setValue(String newVal) throws VariableException {
 		if (isFinal && isInit)
 			throw new AssignToFinalException();
-		Pattern p; // Check whether this variable's type has specific requirements for the value.
-		if ((p = type.getSpecificPattern()) != null) {
-			Matcher match = p.matcher(newVal);
+		Pattern valPattern; // Check whether this variable's type has specific requirements for the value.
+		if ((valPattern = type.getSpecificPattern()) != null) {
+			Matcher match = valPattern.matcher(newVal);
 			if (!match.find()) {
 				throw new BadValueException(newVal, this);
 			}
-			newVal = match.group(1); // Gets the value inside the quotes
-		}
-		try {
-			switch (type) {
-			case INT:
-				myVal = Integer.parseInt(newVal);
-				break;
-			case DOUBLE:
-				myVal = Double.parseDouble(newVal);
-				break;
-			case STRING:
-				myVal = newVal;
-				break;
-			case CHAR:
-				if (newVal.length() != 1) {
-					throw new BadValueException(newVal, this);
-				}
-				myVal = newVal.charAt(0);
-				break;
-			case BOOLEAN:
-				myVal = Boolean.parseBoolean(newVal);
-				break;
-			default:
-				break;
-			}
-		} catch (IllegalArgumentException e) {
-			throw new BadValueException(newVal,this);
+			newVal = match.group(1); // Gets the value
+		} else {
+			throw new BadValueException(newVal, this);
 		}
 		myVal = newVal;
 		isInit = true;
