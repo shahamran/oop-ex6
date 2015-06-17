@@ -16,8 +16,8 @@ public class VariableFactory {
 	 * @return A list of variables created by this line.
 	 * @throws VariableException
 	 */
-	public static List<Variable> parseVariableLine(String lineStr, Scope parentScope) throws VariableException {
-		ArrayList<Variable> variablesList = new ArrayList<Variable>(); // The output list
+	public static List<Variable> parseVariableLine(String lineStr, Scope parentScope) 
+																				throws VariableException {
 		if (isMatch(lineEndPattern, lineStr) == null) {
 			// If a line doesn't end properly (without ;), throw an exception
 			throw new BadVariableLineException(lineStr);
@@ -40,13 +40,28 @@ public class VariableFactory {
 		}
 		if (type == null) // If no type with the given name was found, throw an exception
 			throw new NoSuchTypeException(typeStr);
-		
-		String[] variables = lineStr.split(ARGS_SEPERATOR);
+		return createAllVariables(lineStr, type, finalVar, parentScope);
+	}
+	
+	/**
+	 * Creates a list of variables from a line with the format: <name> (= <value>), ...
+	 * @param lineStr The line with the mentioned format
+	 * @param type The type of variables to create
+	 * @param isFinal true if the desired variables are final or false if not.
+	 * @param parentScope The parent scope.
+	 * @return A list of freshly created variable objects.
+	 * @throws VariableException
+	 */
+	private static List<Variable> createAllVariables(String lineStr, VariableType type, boolean isFinal, 
+										                    Scope parentScope) throws VariableException {
+		ArrayList<Variable> variablesList = new ArrayList<Variable>(); // the output list
+		String[] variables = lineStr.split(ARGS_SEPERATOR); // Split by ','
 		Variable currVariable = null;
 		for (String varStr : variables) {
 			try {
 				currVariable = createVariable(type, varStr);
-			} catch (BadVariableValueException e) {
+			// Check if the bad value is actually another variable's name
+			} catch (BadVariableValueException e) { 
 				for (Variable variable : variablesList) {
 					if (variable.getName().equals(e.getBadValue())) {
 						if (!variable.isInit())
@@ -55,10 +70,10 @@ public class VariableFactory {
 						currVariable = e.getVariable();
 						break;
 					}
-				}				
+				} // If not found, check if an outer scope knows this value.				
 				if (currVariable == null) {
 					Variable v = checkParentScopes(e.getBadValue(),parentScope);
-					if (v != null) {
+					if (v != null) { // If so, make sure it is initialized
 						if (v.isInit()) {
 							e.getVariable().setValue(v.getValue());
 						} else {
@@ -69,30 +84,12 @@ public class VariableFactory {
 					}
 				}
 			}
-			if (finalVar)
+			if (isFinal) // Set as constant if needed.
 				currVariable.setFinal();
 			variablesList.add(currVariable);
 			currVariable = null;
 		}
 		return variablesList;
-	}
-	
-	/**
-	 * Checks all scopes that are in a higher order for variable objects with the given name.
-	 * @param name
-	 * @param parent
-	 * @return
-	 */
-	private static Variable checkParentScopes(String name,Scope parent) {
-		Scope currParent = parent;
-		while (currParent != null) {
-			for (Variable v : currParent.getVariables()) {
-				if (name.equals(v.getName()))
-					return v;
-			}
-			currParent = currParent.getParent();
-		}
-		return null;
 	}
 	
 	/**
@@ -102,7 +99,7 @@ public class VariableFactory {
 	 * @return a variable object.
 	 * @throws VariableException
 	 */
-	private static Variable createVariable(VariableType type, String variableArgs) throws VariableException {
+	private static Variable createVariable(VariableType type, String variableArgs) throws VariableException{
 		if (variableArgs == null)
 			throw new BadVariableLineException();
 		Matcher match = assignPattern.matcher(variableArgs);
@@ -122,6 +119,26 @@ public class VariableFactory {
 			variable.setValue(val);
 		}
 		return variable;
+	}
+	
+	/**
+	 * Checks all scopes that are in a higher order for variable objects with the given name.
+	 * @param name
+	 * @param parent
+	 * @return
+	 */
+	private static Variable checkParentScopes(String name,Scope parent) {
+		Scope currParent = parent;
+		Variable var;
+		while (currParent != null) {
+			// Check if a variable with the same name exists in the scope.
+			var = currParent.getVariables().get(name);
+			if (var != null) {
+				return var;
+			}
+			currParent = currParent.getParent();
+		}
+		return null;
 	}
 	
 	/**
@@ -154,6 +171,13 @@ public class VariableFactory {
 		return null;
 	}
 	
+	/**
+	 * Gets a pattern and a string and returns the string without the first appearance of this pattern.
+	 * @param p The pattern to match
+	 * @param s The string to trim
+	 * @return The given string with an empty string instead of the matched pattern if found, the same
+	 * 		   string otherwise
+	 */
 	private static String trimString(Pattern p, String s) {
 		if (isMatch(p,s) != null) {
 			return s.replaceFirst(p.pattern(), EMPTY_STRING);

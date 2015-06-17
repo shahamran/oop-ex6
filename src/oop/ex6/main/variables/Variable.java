@@ -57,14 +57,14 @@ public class Variable {
 		if (isFinal && isInit)
 			throw new AssignToFinalException();
 		Pattern valPattern; // Checks if the value is in valid syntax.
-		if ((valPattern = myType.getSpecificPattern()) != null) {
+		if ((valPattern = myType.getValuePattern()) != null) {
 			Matcher match = valPattern.matcher(newVal);
 			if (!match.find()) {
 				throw new BadVariableValueException(newVal, this);
 			}
 			newVal = match.group(1); // Gets the value
 		} else {
-			throw new BadVariableValueException(newVal, this);
+			throw new NoSuchTypeException(myType.toString());
 		}
 		myVal = newVal;
 		isInit = true;

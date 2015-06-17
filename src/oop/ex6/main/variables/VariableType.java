@@ -8,23 +8,29 @@ import java.util.regex.Pattern;
  * @author Ran
  *
  */
-public enum VariableType {INT("int","\\s*(\\d+)\\s*"),DOUBLE("double","\\s*(-?\\d+(?:\\.\\d+))\\s*"),
+public enum VariableType {INT("int","\\s*(-?\\d+)\\s*"),DOUBLE("double","\\s*(-?\\d+(?:\\.\\d+)?)\\s*"),
 						  CHAR("char","\\s*('.')\\s*"), STRING("String","\\s*(\".*\")\\s*"),
-						  BOOLEAN("boolean","\\s*(true|false)\\s*"),FINAL("final");
+						  BOOLEAN("boolean","\\s*((?:true|false)|(?:-?\\d+(?:\\.\\d+)?))\\s*"),FINAL("final");
 	String varStr;
 	static final Pattern typePattern = Pattern.compile("^\\s*([A-Za-z]+)"),
 						 namePattern = Pattern.compile("\\s*((?:[A-Za-z]|_\\w)\\w*)\\s*");
 	private Pattern myPattern = null;
-
+	
+	/**
+	 * @param newStr The type name to search in text
+	 */
 	VariableType(String newStr) {
 		varStr = newStr;
 	}
-	
+	/**
+	 * Constructs a new Type with a given name and specific value format.
+	 * @param newStr
+	 * @param regex
+	 */
 	VariableType(String newStr, String regex) {
 		this(newStr);
 		myPattern = Pattern.compile(regex);
 	}
-	
 	@Override
 	public String toString() {
 		return varStr;
@@ -45,10 +51,10 @@ public enum VariableType {INT("int","\\s*(\\d+)\\s*"),DOUBLE("double","\\s*(-?\\
 	}
 	/**
 	 * @return The regex pattern for a type's value, if there is one, null otherwise.
-	 * e.g. String type will return the regex \\s*"(.*)"\\s*
-	 * use Matcher.group(1) to get the argument inside.
+	 * e.g. String type will return the regex \\s*(".*")\\s*
+	 * use Matcher.group(1) to get the value argument.
 	 */
-	public Pattern getSpecificPattern() {
+	public Pattern getValuePattern() {
 		return myPattern;
 	}
 }
