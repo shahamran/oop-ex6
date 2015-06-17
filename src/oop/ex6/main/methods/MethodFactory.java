@@ -10,10 +10,11 @@ public class MethodFactory {
 	private static final int INIT_LINE_IDX = 0;
 	
 	// regex for parsing the first line and the body of the scope
-	private static final String SCOPE_START = "\\s*{$", SCOPE_END = "}$",
-						RETURN_LINE = "^\\s*(return)\\s*;",
-						VOID = "^\\s*(void)", METHOD_NAME = "\\s+(\\b[A-Za-z]+[0-9]*_{0,1}[A-Za-z0-9]+\\b)",
-						ARGS_LINE =  "\\s*\\(\\s*[A_Za-z,0-9 ]+\\s*\\)";
+	private static final String SCOPE_START = "{$", SCOPE_END = "}$",
+						END_LINE = ";$",
+						RETURN_LINE = "^\\s*\\b(return)\b"+ END_LINE,
+						VOID = "^\\s*\\bvoid\\b", METHOD_NAME = "\\b([A-Za-z]\\w*)\\b",
+						ARGS_LINE =  "\\(.*\\)";
 						
 						
 
@@ -21,27 +22,9 @@ public class MethodFactory {
 						   scopeEndEndPattern = Pattern.compile(SCOPE_END),
 						   returnPattern = Pattern.compile(RETURN_LINE),
 						   argsPattern = Pattern.compile(ARGS_LINE),
-						   methodNamePattern = Pattern.compile(METHOD_NAME);
+						   methodNamePattern = Pattern.compile(METHOD_NAME),
+						   firstLinePattern = Pattern.compile(VOID+METHOD_NAME+ARGS_LINE+SCOPE_START);
 						   
-	
-						   
-	
-	enum VariableType {INT("int"),DOUBLE("double"),CHAR("char"), //need to have these for parameteres
-		       			STRING("String"),BOOLEAN("boolean");
-		       			String varStr;
-		       			static final Pattern typePattern = Pattern.compile("^[A-Za-z]+");
-		       			
-		       			VariableType(String newStr){
-		       				varStr = newStr;
-		       			}
-		       			@Override
-		       			public String toString() {
-		       				return varStr;
-		       			}
-		       			public static Pattern getPattern() {
-		       				return typePattern;
-		       			}
-		     		  } 
 	
 	
 	/**
@@ -56,7 +39,6 @@ public class MethodFactory {
 																	  IllegalParamsException,
 																	  IllegalInitLineException{
 		ArrayList<String> params = new ArrayList<String>();
-		Pattern firstLinePattern = Pattern.compile(VOID+METHOD_NAME+ARGS_LINE+SCOPE_START);
 		Matcher lineMatch = firstLinePattern.matcher(line);
 		if(lineMatch.matches()){
 			//looking for real name
