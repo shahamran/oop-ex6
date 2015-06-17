@@ -2,10 +2,12 @@ package oop.ex6.main;
 
 import java.util.*;
 
+import oop.ex6.main.variables.Variable;
+
 public abstract class Scope {
 	protected Scope myParent;
 	protected List<String> myContent;
-	protected HashSet<?> myVariables;
+	protected HashSet<Variable> myVariables;
 	
 	protected Scope(Scope newParent, List<String> newContent) {
 		myParent = newParent;
@@ -22,7 +24,7 @@ public abstract class Scope {
 		return false;
 	}
 	
-	public Set<?> getVariables() {
+	public Set<Variable> getVariables() {
 		return myVariables;
 	}
 }

@@ -5,7 +5,7 @@ package oop.ex6.main.variables;
  * @author Ran
  *
  */
-public class BadValueException extends VariableException {
+public class BadVariableValueException extends VariableException {
 	private static final long serialVersionUID = 1L;
 	private String badValue;
 	private Variable variable;
@@ -16,7 +16,7 @@ public class BadValueException extends VariableException {
 	 * @param badVal The faulty value
 	 * @param var The variable to assign.
 	 */
-	public BadValueException(String badVal, Variable var) {
+	public BadVariableValueException(String badVal, Variable var) {
 		super("Bad variable value: " + badVal);
 		this.badValue = badVal;
 		this.variable = var;

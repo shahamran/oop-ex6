@@ -9,37 +9,21 @@ import java.util.regex.*;
  */
 public class Variable {
 	private boolean isFinal = false, isInit = false;
-	private String myName;
-	private Object myVal;
-	private VariableType type;
+	private String myName, myVal = null;
+	private VariableType myType;
 	
 	/**
 	 * Constructs a new variable with a given name and type.
 	 * @param newName The name of the variable
 	 * @param newType The variable's type (VariableType enum object)
+	 * @throws BadVariableNameException 
 	 */
-	public Variable(String newName, VariableType newType) {
+	public Variable(String newName, VariableType newType) throws BadVariableNameException {
 		myName = newName;
-		type = newType;
-	}
-	
-	/**
-	 * Constructs a new variable with a given name type and value.
-	 * @param newName The name of the variable
-	 * @param newValue The value to set
-	 * @param newType The variable's type
-	 * @throws VariableException Thrown when trying to assign a bad value.
-	 */
-	public Variable(String newName, String newValue, VariableType newType) throws BadValueException {
-		this(newName, newType);
-		if (!(newValue == null)) {
-			try {
-				setValue(newValue);
-			} catch (BadValueException e) {
-				throw e;
-			} catch (VariableException e) {
-				// This shouldn't be reached - a new variable is not final by default.
-			}
+		myType = newType;
+		Matcher nameMatch = VariableType.getNamePattern().matcher(newName);
+		if (!nameMatch.matches()) {
+			throw new BadVariableNameException(newName);
 		}
 	}
 	
@@ -53,7 +37,7 @@ public class Variable {
 	/**
 	 * @return The value of this variable object.
 	 */
-	public Object getValue() {
+	public String getValue() {
 		return myVal;
 	}
 	
@@ -72,15 +56,15 @@ public class Variable {
 	public void setValue(String newVal) throws VariableException {
 		if (isFinal && isInit)
 			throw new AssignToFinalException();
-		Pattern valPattern; // Check whether this variable's type has specific requirements for the value.
-		if ((valPattern = type.getSpecificPattern()) != null) {
+		Pattern valPattern; // Checks if the value is in valid syntax.
+		if ((valPattern = myType.getSpecificPattern()) != null) {
 			Matcher match = valPattern.matcher(newVal);
 			if (!match.find()) {
-				throw new BadValueException(newVal, this);
+				throw new BadVariableValueException(newVal, this);
 			}
 			newVal = match.group(1); // Gets the value
 		} else {
-			throw new BadValueException(newVal, this);
+			throw new BadVariableValueException(newVal, this);
 		}
 		myVal = newVal;
 		isInit = true;

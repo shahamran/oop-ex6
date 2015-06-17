@@ -9,10 +9,11 @@ import java.util.regex.Pattern;
  *
  */
 public enum VariableType {INT("int","\\s*(\\d+)\\s*"),DOUBLE("double","\\s*(-?\\d+(?:\\.\\d+))\\s*"),
-						  CHAR("char","\\s*'(.)'\\s*"), STRING("String","\\s*\"(.*)\"\\s*"),
+						  CHAR("char","\\s*('.')\\s*"), STRING("String","\\s*(\".*\")\\s*"),
 						  BOOLEAN("boolean","\\s*(true|false)\\s*"),FINAL("final");
 	String varStr;
-	static final Pattern typePattern = Pattern.compile("(^[A-Za-z]+)");
+	static final Pattern typePattern = Pattern.compile("^\\s*([A-Za-z]+)"),
+						 namePattern = Pattern.compile("\\s*((?:[A-Za-z]|_\\w)\\w*)\\s*");
 	private Pattern myPattern = null;
 
 	VariableType(String newStr) {
@@ -27,6 +28,13 @@ public enum VariableType {INT("int","\\s*(\\d+)\\s*"),DOUBLE("double","\\s*(-?\\
 	@Override
 	public String toString() {
 		return varStr;
+	}
+	/**
+	 * @return The regex pattern to extract the name argument from a line.
+	 * Use matcher.group(1) to get the string value.
+	 */
+	public static Pattern getNamePattern() {
+		return namePattern;
 	}
 	/**
 	 * @return The regex pattern to extract the type argument from a line.
