@@ -5,13 +5,15 @@ import java.util.regex.*;
 import oop.ex6.main.Scope;
 
 public class VariableFactory {
-	private static final String VARIABLE_ASSIGNMENT = "(\\w+)\\s*(?:=\\s*(.+))?", LINE_END = "\\s*;\\s*$",
-								ARGS_SEPERATOR = "\\s*,\\s*", EMPTY_STRING = "";
+	private static final String VARIABLE_ASSIGNMENT = "^\\s*(\\w+)\\s*=\\s*(.+)",
+								VARIABLE_DEFINITION = "\\s*(\\w+)\\s*(?:=\\s*(.+))?",
+								LINE_END = "\\s*;\\s*$", ARGS_SEPERATOR = "\\s*,\\s*", EMPTY_STRING = "";
 	private static Pattern assignPattern = Pattern.compile(VARIABLE_ASSIGNMENT),
+						   definePattern = Pattern.compile(VARIABLE_DEFINITION),
 						   lineEndPattern = Pattern.compile(LINE_END);
 	
 	/**
-	 * Parses a variable definition line to extract all variable objects from it.
+	 * Parses a variable line to define new variables or change variable's value.
 	 * @param lineStr The variable line string
 	 * @return A list of variables created by this line.
 	 * @throws VariableException
@@ -26,25 +28,78 @@ public class VariableFactory {
 		boolean finalVar = isFinal(lineStr);
 		if (finalVar) // Remove the 'final' from the line
 			lineStr = trimString(VariableType.getTypePattern(), lineStr); 
-		
-		String typeStr = isMatch(VariableType.getTypePattern(),lineStr); 
-		VariableType type = null;
-		if (typeStr == null) 
-			throw new VariableException();
-		for (VariableType t : VariableType.values()) { // Checks what type this variable is
-			if (typeStr.equals(t.toString())) {
-				type = t;
-				lineStr = trimString(VariableType.getNamePattern(),lineStr); // remove the <type> argument
-				break;
-			}
+		if ((isMatch(assignPattern, lineStr)) != null) {
+			changeValue(lineStr, parentScope);
+			return new ArrayList<Variable>();
 		}
-		if (type == null) // If no type with the given name was found, throw an exception
-			throw new NoSuchTypeException(typeStr);
+		VariableType type = getTypeFromLine(lineStr);
+		lineStr = trimString(VariableType.getTypePattern(),lineStr); // removes the type string from line
 		return createAllVariables(lineStr, type, finalVar, parentScope);
 	}
 	
 	/**
-	 * Creates a list of variables from a line with the format: <name> (= <value>), ...
+	 * Extracts the variable type from the definition line.
+	 * @param line The string of the definition line - assumes only that it matches the *type* pattern.
+	 * @return The variable type as specified by the line string.
+	 * @throws NoSuchTypeException If the type is in invalid format.
+	 * @throws VariableException If a bad line is given.
+	 */
+	private static VariableType getTypeFromLine(String line) throws NoSuchTypeException,VariableException {
+		VariableType myType = null;
+		String typeStr = isMatch(VariableType.getTypePattern(),line);
+		if (typeStr == null)
+			throw new VariableException();
+		for (VariableType type : VariableType.values()) {
+			if (typeStr.equals(type.toString())) {
+				myType = type;
+				break;
+			}
+		}
+		if (myType == null)
+			throw new NoSuchTypeException(typeStr);
+		return myType;
+	}
+	
+	private static void changeValue(String lineStr, Scope parentScope) throws VariableException {
+		Matcher match = assignPattern.matcher(lineStr);
+		if (!match.matches())
+			throw new VariableException(lineStr);
+		String name = match.group(1), value = match.group(2);
+		Variable variable;
+		if ((variable = checkParentScopes(name, parentScope)) == null) 
+			throw new BadVariableLineException(lineStr);
+		try {
+			variable.setValue(value);
+		} catch (BadVariableValueException e) {
+			Variable other;
+			if ((other = checkParentScopes(value, parentScope)) == null)
+				throw e;
+			variable.setValue(other.getValue());
+		}
+		
+	}
+	
+	/**
+	 * Creates a new variable that acts as if it was initialized. Accepts 'final' values also.
+	 * @param argStr The variable string in the format: (*final*) *type* *name* 
+	 * @return A variable object in the right type set as initialized.
+	 * @throws VariableException If the line/type/name is in invalid format 
+	 */
+	public static Variable createArgumentVariable(String argStr) throws VariableException {
+		boolean finalVar = isFinal(argStr);
+		if (finalVar) // Remove the 'final' from the line
+			argStr = trimString(VariableType.getTypePattern(), argStr); 
+		VariableType type = getTypeFromLine(argStr); // Gets the variable type
+		argStr = trimString(VariableType.getTypePattern(),argStr); // removes the type string from line
+		Variable variable = createVariable(type,argStr); // creates the variable
+		if (finalVar) 
+			variable.setFinal();
+		variable.setInit();
+		return variable;
+	}
+	
+	/**
+	 * Creates a list of variables from a line with the format: *name* (= *value*), ...
 	 * @param lineStr The line with the mentioned format
 	 * @param type The type of variables to create
 	 * @param isFinal true if the desired variables are final or false if not.
@@ -60,30 +115,26 @@ public class VariableFactory {
 		for (String varStr : variables) {
 			try {
 				currVariable = createVariable(type, varStr);
+				
 			// Check if the bad value is actually another variable's name
 			} catch (BadVariableValueException e) { 
 				for (Variable variable : variablesList) {
 					if (variable.getName().equals(e.getBadValue())) {
-						if (!variable.isInit())
-							throw new EmptyVariableException(variable);
-						e.getVariable().setValue(variable.getValue());
 						currVariable = e.getVariable();
+						currVariable.setValue(variable.getValue());
 						break;
 					}
 				} // If not found, check if an outer scope knows this value.				
 				if (currVariable == null) {
 					Variable v = checkParentScopes(e.getBadValue(),parentScope);
-					if (v != null) { // If so, make sure it is initialized
-						if (v.isInit()) {
-							e.getVariable().setValue(v.getValue());
-						} else {
-							throw new EmptyVariableException(v);
-						}
+					if (v != null) { // If so, get its value and return it
+						currVariable = e.getVariable();
+						currVariable.setValue(v.getValue());
 					} else {
 						throw e;
 					}
 				}
-			}
+			} // Try - catch ends here
 			if (isFinal) // Set as constant if needed.
 				currVariable.setFinal();
 			variablesList.add(currVariable);
@@ -102,7 +153,7 @@ public class VariableFactory {
 	private static Variable createVariable(VariableType type, String variableArgs) throws VariableException{
 		if (variableArgs == null)
 			throw new BadVariableLineException();
-		Matcher match = assignPattern.matcher(variableArgs);
+		Matcher match = definePattern.matcher(variableArgs);
 		String name = null, val = null;
 		if (match.matches()) {
 			name = match.group(1);
@@ -127,7 +178,7 @@ public class VariableFactory {
 	 * @param parent
 	 * @return
 	 */
-	private static Variable checkParentScopes(String name,Scope parent) {
+	private static Variable checkParentScopes(String name, Scope parent) {
 		Scope currParent = parent;
 		Variable var;
 		while (currParent != null) {
