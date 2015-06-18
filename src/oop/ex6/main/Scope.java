@@ -7,7 +7,7 @@ import oop.ex6.main.variables.Variable;
 public abstract class Scope {
 	protected Scope myParent;
 	protected List<String> myContent;
-	protected HashMap<String,Variable> myVariables;
+	protected HashMap<String,Variable> myVariables = new HashMap<String, Variable>();
 	
 	protected Scope(Scope newParent, List<String> newContent) {
 		myParent = newParent;

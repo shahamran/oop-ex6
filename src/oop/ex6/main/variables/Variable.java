@@ -36,8 +36,11 @@ public class Variable {
 	
 	/**
 	 * @return The value of this variable object.
+	 * @throws EmptyVariableException 
 	 */
-	public String getValue() {
+	public String getValue() throws EmptyVariableException {
+		if (!isInit)
+			throw new EmptyVariableException(this);
 		return myVal;
 	}
 	
@@ -76,5 +79,12 @@ public class Variable {
 	 */
 	public void setFinal() {
 		isFinal = true;
+	}
+	
+	/**
+	 * Sets the variable as if it was initialized. Only used for 'toy' variables - for methods.
+	 */
+	void setInit() {
+		isInit = true;
 	}
 }
