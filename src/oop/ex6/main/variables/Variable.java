@@ -36,10 +36,10 @@ public class Variable {
 	
 	/**
 	 * @return The value of this variable object.
-	 * @throws EmptyVariableException 
+	 * @throws EmptyVariableException thrown if the value was not initialized.
 	 */
 	public String getValue() throws EmptyVariableException {
-		if (!isInit)
+		if (!isInit) // Checks if the variable was initialised.
 			throw new EmptyVariableException(this);
 		return myVal;
 	}
@@ -86,5 +86,12 @@ public class Variable {
 	 */
 	void setInit() {
 		isInit = true;
+	}
+	
+	/**
+	 * @return The VariableType name for this variable
+	 */
+	public String getType() {
+		return myType.toString();
 	}
 }

@@ -7,33 +7,32 @@ package oop.ex6.main.variables;
  */
 public class BadVariableValueException extends VariableException {
 	private static final long serialVersionUID = 1L;
-	private String badValue;
-	private Variable variable;
+	private String badVal;
+	private Variable var;
 	
 	/**
 	 * Constructs a new exception holding the faulty value and the variable to which
 	 * it was assigned
-	 * @param badVal The faulty value
-	 * @param var The variable to assign.
+	 * @param badValue The faulty value
+	 * @param variable The variable to assign.
 	 */
-	public BadVariableValueException(String badVal, Variable var) {
-		super("Bad variable value: " + badVal);
-		this.badValue = badVal;
-		this.variable = var;
+	public BadVariableValueException(String badValue, Variable variable) {
+		super("Bad variable value: " + badValue + " for type: " + variable.getType());
+		this.badVal = badValue;
+		this.var = variable;
 	}
 	
 	/**
 	 * @return The value that's causing your problems.
 	 */
 	public String getBadValue() {
-		return badValue;
+		return badVal;
 	}
 	
 	/**
 	 * @return The variable that still has a chance.
 	 */
 	public Variable getVariable() {
-		return variable;
+		return var;
 	}
-	
 }

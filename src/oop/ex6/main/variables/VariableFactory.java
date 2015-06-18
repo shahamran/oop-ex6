@@ -38,6 +38,25 @@ public class VariableFactory {
 	}
 	
 	/**
+	 * Creates a new variable that acts as if it was initialized. Accepts 'final' values also.
+	 * @param argStr The variable string in the format: (*final*) *type* *name* 
+	 * @return A variable object in the right type set as initialized.
+	 * @throws VariableException If the line/type/name is in invalid format 
+	 */
+	public static Variable createArgumentVariable(String argStr) throws VariableException {
+		boolean finalVar = isFinal(argStr);
+		if (finalVar) // Remove the 'final' from the line
+			argStr = trimString(VariableType.getTypePattern(), argStr); 
+		VariableType type = getTypeFromLine(argStr); // Gets the variable type
+		argStr = trimString(VariableType.getTypePattern(),argStr); // removes the type string from line
+		Variable variable = createVariable(type,argStr); // creates the variable
+		if (finalVar) 
+			variable.setFinal();
+		variable.setInit();
+		return variable;
+	}
+	
+	/**
 	 * Extracts the variable type from the definition line.
 	 * @param line The string of the definition line - assumes only that it matches the *type* pattern.
 	 * @return The variable type as specified by the line string.
@@ -60,10 +79,17 @@ public class VariableFactory {
 		return myType;
 	}
 	
+	/**
+	 * Reads the variable line to try and change the variable in it.
+	 * @param lineStr The variable line.
+	 * @param parentScope The scope in which this line written.
+	 * @throws VariableException Thrown if a problem has occurred with changing the variable's value, or
+	 * if no such variable exists.
+	 */
 	private static void changeValue(String lineStr, Scope parentScope) throws VariableException {
 		Matcher match = assignPattern.matcher(lineStr);
 		if (!match.matches())
-			throw new VariableException(lineStr);
+			throw new BadVariableLineException(lineStr);
 		String name = match.group(1), value = match.group(2);
 		Variable variable;
 		if ((variable = checkParentScopes(name, parentScope)) == null) 
@@ -77,25 +103,6 @@ public class VariableFactory {
 			variable.setValue(other.getValue());
 		}
 		
-	}
-	
-	/**
-	 * Creates a new variable that acts as if it was initialized. Accepts 'final' values also.
-	 * @param argStr The variable string in the format: (*final*) *type* *name* 
-	 * @return A variable object in the right type set as initialized.
-	 * @throws VariableException If the line/type/name is in invalid format 
-	 */
-	public static Variable createArgumentVariable(String argStr) throws VariableException {
-		boolean finalVar = isFinal(argStr);
-		if (finalVar) // Remove the 'final' from the line
-			argStr = trimString(VariableType.getTypePattern(), argStr); 
-		VariableType type = getTypeFromLine(argStr); // Gets the variable type
-		argStr = trimString(VariableType.getTypePattern(),argStr); // removes the type string from line
-		Variable variable = createVariable(type,argStr); // creates the variable
-		if (finalVar) 
-			variable.setFinal();
-		variable.setInit();
-		return variable;
 	}
 	
 	/**
@@ -135,7 +142,7 @@ public class VariableFactory {
 					}
 				}
 			} // Try - catch ends here
-			if (isFinal) // Set as constant if needed.
+			if (isFinal && currVariable != null) // Set as constant if needed.
 				currVariable.setFinal();
 			variablesList.add(currVariable);
 			currVariable = null;
@@ -174,9 +181,9 @@ public class VariableFactory {
 	
 	/**
 	 * Checks all scopes that are in a higher order for variable objects with the given name.
-	 * @param name
-	 * @param parent
-	 * @return
+	 * @param name The variable name to check
+	 * @param parent The scope to start checking from.
+	 * @return The variable object with the given name if found, null otherwise.
 	 */
 	private static Variable checkParentScopes(String name, Scope parent) {
 		Scope currParent = parent;
