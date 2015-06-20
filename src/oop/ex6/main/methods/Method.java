@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import oop.ex6.main.IllegalCodeException;
+import oop.ex6.main.SJavaFile;
 import oop.ex6.main.Scope;
 import oop.ex6.main.variables.Variable;
 import oop.ex6.main.variables.VariableException;
@@ -12,10 +13,15 @@ import oop.ex6.main.variables.VariableFactory;
 
 public class Method extends Scope {
 	protected String myName;
-	protected String[] arguments;
+	protected Variable[] arguments;
 	
+	private static final String  METHOD_NAME ="\\b([A-Za-z]\\w*)\\b" ,
+								 ARGS  = "\\(.*\\);";
 	
-	enum ValidLine{SINGLE_LINE("^.*;$"),COND_START("{$"), COND_END("^\\s*}$"), METHOD_CALL("^.*\\(.*\\);"),
+	private static Pattern argsPattern = Pattern.compile(ARGS),
+						   methodNamePattern = Pattern.compile(METHOD_NAME);
+			
+	enum ValidLine{SINGLE_LINE("^.*;$"),COND_START("{$"), COND_END("^\\s*}$"), METHOD_CALL(METHOD_NAME + ARGS),
 					RETURN_LINE("^\\s*\\b(return)\b;$");
 	Pattern myRegex;
 	ValidLine(String regex) {
@@ -33,18 +39,15 @@ public class Method extends Scope {
 		myName = newName;
 		try{
 			for(String arg : newArguments){
-				List<Variable> newVars = VariableFactory.parseVariableLine(arg, this);
-				for(Variable newVar :newVars){ //this is quite useless, because there always will be only one
-												//variable, but it is what the method returns, so...
-					this.myVariables.put(newVar.getName(),newVar); //FIND A WAY TO MARK AS INITIALIZED!
-				}
+				Variable newVar = VariableFactory.createArgumentVariable(arg);
+				this.myVariables.put(newVar.getName(),newVar); 
 			}
 		}catch(VariableException e){
 			throw new IllegalMethodException();
 		}
 	}
 
-	@Override //exactly not elegant as the File.readScope()
+	@Override //exactly as not elegant as the File.readScope()
 	public void readScope() throws IllegalMethodException {
 		Matcher match;
 		
@@ -60,7 +63,7 @@ public class Method extends Scope {
 			
 			String line = myContent.get(i);
 			
-			if(this.bracketCount > 0){//Some inner scope open
+			if(this.bracketCount > 0){//Some inner scope is open
 				match = ValidLine.COND_END.getPattern().matcher(line);
 				if (match.find()) {
 					if (this.bracketCount > 1) { // more then one scope open 
@@ -94,7 +97,11 @@ public class Method extends Scope {
 				
 				match = ValidLine.METHOD_CALL.getPattern().matcher(line);
 				if(match.find()){
-					// the line is method call - check it
+					if(!isLegalCall(line)){
+						throw  new IllegalMethodCallException();
+					}else{
+						continue;
+					}
 					
 				}else{// not a method call - has to be variable operation
 					try{
@@ -106,7 +113,7 @@ public class Method extends Scope {
 				}
 			
 				
-			}else{ // there are no legal options left - the line is illegal
+			}else{ // there are no legal options left outside some scope- the line is illegal
 				throw new IllegalMethodException();
 			}
 			
@@ -115,8 +122,10 @@ public class Method extends Scope {
 		
 		//Actually reading inner scopes
 		try{
-			for(Scope subScope :this.mySubScopes){
-				subScope.readScope();
+			if(mySubScopes.size() != 0){
+				for(Scope subScope :this.mySubScopes){
+					subScope.readScope();
+				}
 			}
 		}catch(IllegalCodeException e){
 			throw new IllegalMethodException();
@@ -124,11 +133,52 @@ public class Method extends Scope {
 
 	}
 
+	/**
+	 * This method gets the name of the method object
+	 * @return myName the name of the method
+	 */
 	public String getName() {
 		return myName;
 	}
 		
-
+	/**
+	 * 
+	 */
+	public Variable[] getArgs(){
+		return arguments;
+	}
 	
+	/**
+	 * This method checks if the line is legal method call
+	 * @param methodCall
+	 * @return
+	 */
+	private boolean isLegalCall(String methodCall) {
+		Matcher match = methodNamePattern.matcher(methodCall);
+		if(match.find()){
+			String methodName = match.group(1);
+			Method theMethod = ((SJavaFile) myParent).getMethod(methodName); //looking for method
+			if(theMethod != null){ // method found with such name
+				Variable[] methodArgs = theMethod.getArgs();
+				match = argsPattern.matcher(methodCall);
+				if(match.find()){ // checking arguments
+					String[] theArgs = match.group(1).split(",");
+					if(theArgs.length == methodArgs.length){//the amount of arguments is legal
+						for(int i = 0; i < theArgs.length ; i ++){
+							if(theMethod.getVariable(theArgs[i]) != null){ //found variable with such name
+								
+							}else{ //no variable with such name - consider it constant
+								
+							}
+						}
+						return true; //only of every condition was met
+					}
+				}
+			}
+		}else{
+			return false;
+		}
+		
+	}
 
 }

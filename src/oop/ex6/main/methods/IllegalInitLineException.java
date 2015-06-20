@@ -1,6 +1,5 @@
 package oop.ex6.main.methods;
 
-import oop.ex6.main.IllegalCodeException;
 
 public class IllegalInitLineException extends IllegalMethodException {
 

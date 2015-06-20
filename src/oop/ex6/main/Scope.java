@@ -15,6 +15,8 @@ public abstract class Scope {
 	protected Scope(Scope newParent, List<String> newContent) {
 		myParent = newParent;
 		myContent = newContent;
+		mySubScopes = new ArrayList<Scope>();
+		myVariables = new HashMap<String, Variable>();
 	}
 	
 	public abstract void readScope() throws IllegalCodeException;
@@ -29,5 +31,25 @@ public abstract class Scope {
 	
 	public HashMap<String, Variable> getVariables() {
 		return myVariables;
+	}
+	
+	/**
+	 * Searches for the variable initialized with given name in
+	 * the scope and all the outer ones
+	 * @param varName name of the VAriable we are looking for
+	 * @return the variable with such name or null if not found
+	 */
+	public Variable getVariable(String varName){
+		Variable theVar = null;
+		Scope theScope = this;
+		while(theScope!= null){
+			theVar = theScope.getVariables().get(varName);
+			if(theVar != null){
+				return theVar;
+			}else{
+				theScope = theScope.getParent();
+			}
+		}
+		return theVar;
 	}
 }

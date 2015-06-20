@@ -35,14 +35,15 @@ public class SJavaFile extends Scope {
 		Matcher match;
 		for (int i = 0; i < myContent.size(); i++) {
 			String line = myContent.get(i);
-			if (this.bracketCount > 0) {
+			
+			if (this.bracketCount > 0) { //some inner scope is open
 				match = ValidLine.METHOD_END.getPattern().matcher(line);
 				if (match.find()) {
 					//
 					if (this.bracketCount > 1) {
 						this.bracketCount--;
 						continue;
-					} else if (this.bracketCount == 1) {
+					} else if (this.bracketCount == 1) { //exactly one not closed scope left
 						Method method = MethodFactory.createMethod(this, myContent.subList(this.scopeStart,i));
 						methodsList.put(method.getName(), method);
 						this.mySubScopes.add(method);
@@ -51,7 +52,7 @@ public class SJavaFile extends Scope {
 					}
 						throw new IllegalCodeException();
 					
-				} else {
+				}else{
 					continue;
 				}
 			}
@@ -80,6 +81,16 @@ public class SJavaFile extends Scope {
 			throw new IllegalCodeException();
 		}
 
+	}
+	
+	/**
+	 * 
+	 * @param methodName name of the method of interest
+	 * @return the Method with such name or null if none found
+	 */
+	public Method getMethod(String methodName){
+		return methodsList.get(methodName);
+		
 	}
 	
 	/**
