@@ -91,7 +91,7 @@ public class Variable {
 	/**
 	 * @return The VariableType name for this variable
 	 */
-	public String getType() {
-		return myType.toString();
+	public VariableType getType() {
+		return myType;
 	}
 }
