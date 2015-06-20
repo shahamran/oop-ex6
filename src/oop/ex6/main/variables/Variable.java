@@ -62,7 +62,7 @@ public class Variable {
 		Pattern valPattern; // Checks if the value is in valid syntax.
 		if ((valPattern = myType.getValuePattern()) != null) {
 			Matcher match = valPattern.matcher(newVal);
-			if (!match.find()) {
+			if (!match.matches()) {
 				throw new BadVariableValueException(newVal, this);
 			}
 			newVal = match.group(1); // Gets the value
