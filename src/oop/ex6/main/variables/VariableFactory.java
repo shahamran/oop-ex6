@@ -14,8 +14,13 @@ public class VariableFactory {
 	
 	/**
 	 * Parses a variable line to define new variables or change variable's value.
-	 * @param lineStr The variable line string
-	 * @return A list of variables created by this line.
+	 * If the line fits definition pattern, this method will return all variables defined.
+	 * Otherwise, if it was a valid variable assignment line, this method updates the variables changed.
+	 * If non of the above was met, an exception will be thrown.
+	 * Good lines example: - char myChar = '&'; - myChar = '#'; - char newChar = myChar; -
+	 * @param lineStr The variable line string.
+	 * @param parentScope The scope object that called this method.
+	 * @return A list of variables created by this line, if it was a definition line, null otherwise.
 	 * @throws VariableException
 	 */
 	public static List<Variable> parseVariableLine(String lineStr, Scope parentScope) 
@@ -30,7 +35,7 @@ public class VariableFactory {
 			lineStr = trimString(VariableType.getTypePattern(), lineStr); 
 		if ((isMatch(assignPattern, lineStr)) != null) {
 			changeValue(lineStr, parentScope);
-			return new ArrayList<Variable>();
+			return null;
 		}
 		VariableType type = getTypeFromLine(lineStr);
 		lineStr = trimString(VariableType.getTypePattern(),lineStr); // removes the type string from line
