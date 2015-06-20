@@ -1,8 +1,11 @@
 package oop.ex6.main.parsing;
 
-import oop.ex6.main.IllegalCodeException;
+import oop.ex6.main.SJavaException;
 
-public class IllegalSJavaFileException extends IllegalCodeException {
+/**
+ * Thrown if a file is not a valid SJava file (for example: no .sjava suffix, not a file).
+ */
+public class IllegalSJavaFileException extends SJavaException {
 	private static final long serialVersionUID = 1L;
 	
 	public IllegalSJavaFileException() {

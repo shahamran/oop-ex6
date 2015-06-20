@@ -152,8 +152,10 @@ public class VariableFactory {
 			if (parentScope.getVariables().get(currVariable.getName()) != null) {
 				throw new BadVariableNameException(currVariable.getName());
 			}
-			if (isFinal) // Set as constant if needed.
-				currVariable.setFinal();
+			if (isFinal) { // Set as constant if needed.
+				if (currVariable.getValue() != null)
+					currVariable.setFinal();
+			} 
 			variablesList.add(currVariable);
 			currVariable = null;
 		}

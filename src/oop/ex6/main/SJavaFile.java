@@ -10,16 +10,20 @@ public class SJavaFile extends Scope {
 	
 	private HashMap<String, Method> methodsList;
 	int bracketCount = 0, scopeStart = 0;
-	
+
 	enum ValidLine{VARIABLE_INIT("^[A-Za-z]+"),METHOD_START("{$"), METHOD_END("}$");
 		Pattern myRegex;
 		
+
+	enum ValidLine{VARIABLE_INIT("^[A-Za-z]+"),METHOD_START("\\{\\s*$"), METHOD_END("^\\s*\\}\\s*$");
+		Pattern myPattern;
+
 		ValidLine(String regex) {
-			myRegex = Pattern.compile(regex);
+			myPattern = Pattern.compile(regex);
 		}
 		
 		Pattern getPattern() {
-			return myRegex;
+			return myPattern;
 		}
 	}
 	
@@ -32,11 +36,15 @@ public class SJavaFile extends Scope {
 		methodsList = new HashMap<String,Method>();
 	}
 	
+
 	/**
 	 * Method gets the methods defined in the scope
 	 * @return all the methods defined in this file
 	 */
 	public HashMap<String,Method> getMethods() {
+
+	public Map<String,Method> getMethods() {
+
 		return methodsList;
 	}
 
@@ -47,14 +55,11 @@ public class SJavaFile extends Scope {
 	 */
 	@Override
 	public void readScope() throws IllegalCodeException {
-		Matcher match;
+		String line;
 		for (int i = 0; i < myContent.size(); i++) {
-			String line = myContent.get(i);
-			
+			line = myContent.get(i);
 			if (this.bracketCount > 0) { //some inner scope is open
-				match = ValidLine.METHOD_END.getPattern().matcher(line);
-				if (match.find()) {
-					//
+				if (isMatch(ValidLine.METHOD_END.getPattern(),line)) {
 					if (this.bracketCount > 1) {
 						this.bracketCount--;
 						continue;
@@ -64,38 +69,33 @@ public class SJavaFile extends Scope {
 						this.mySubScopes.add(method);
 						this.bracketCount --;
 						continue;
+					} else {
+						throw new IllegalCodeException(line,i);
 					}
-						throw new IllegalCodeException();
 					
-				}else{
+				} else {
 					continue;
 				}
-			}
-			
-			match = ValidLine.VARIABLE_INIT.getPattern().matcher(line);
-			if (match.find()) {
-				// variables.add (new variable);
+			} else if (isMatch(ValidLine.VARIABLE_INIT.getPattern(),line)) {
+				super.handleVariableLine(line);
 				continue;
-			}
-			match = ValidLine.METHOD_START.getPattern().matcher(line);
-			if (match.find()) {
-				//
+			} else if (isMatch(ValidLine.METHOD_START.getPattern(),line)) {
 				this.scopeStart = i;
 				this.bracketCount++;
 				continue;
+			} else { // If not one of the following
+				throw new IllegalCodeException(line, i);
 			}
-			
-			
 		}
-		//Actually reading
-		try{
-			for(Scope subScope :this.mySubScopes){
-				subScope.readScope();
-			}
-		}catch( IllegalCodeException e){
-			throw new IllegalCodeException();
+		// Actually reading
+		for(Scope subScope : this.mySubScopes){
+			subScope.readScope();
 		}
-
+	}
+	
+	private boolean isMatch(Pattern p, String s) {
+		Matcher m = p.matcher(s);
+		return m.find();
 	}
 	
 	/**
