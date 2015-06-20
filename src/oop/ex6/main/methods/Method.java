@@ -71,7 +71,7 @@ public class Method extends Scope {
 						continue;
 					} else if (bracketCount == 1) { // exactly one not closed scope left
 						
-						// Condition newCondition = new Condition(this, myContent.subList(this.scopeStart,i));
+						//Condition newCondition = new Condition(this, myContent.subList(this.scopeStart,i));
 						//this.mySubScopes.add(newCondition); 
 						this.bracketCount --;
 						this.scopeStart = 0;
@@ -167,7 +167,7 @@ public class Method extends Scope {
 						for(int i = 0; i < theArgs.length ; i ++){
 							Variable theVar = theMethod.getVariable(theArgs[i]);
 							if(theVar != null){ //found variable with such name
-								if(theVar.getType().equals(methodArgs[i].getType())){ //variable mathces the type of the argument
+								if(theVar.getType().equals(methodArgs[i].getType())){ //variable match1es the type of the argument
 									continue;
 								}else{
 									return false; //type doesn't fit
@@ -181,9 +181,15 @@ public class Method extends Scope {
 								}
 							}
 						}
-						return true; //only of every condition was met for every parametre
+						return true; //only of every condition was met for every parameter
+					}else{
+						return false;// wrong amount of arguments
 					}
+				}else{
+					return false;// no arguments were found
 				}
+			}else{
+				return false;//call for not existing method
 			}
 		}else{
 			return false;

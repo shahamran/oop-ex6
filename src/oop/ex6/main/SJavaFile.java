@@ -10,9 +10,6 @@ public class SJavaFile extends Scope {
 	
 	private HashMap<String, Method> methodsList;
 	int bracketCount = 0, scopeStart = 0;
-
-	enum ValidLine{VARIABLE_INIT("^[A-Za-z]+"),METHOD_START("{$"), METHOD_END("}$");
-		Pattern myRegex;
 		
 
 	enum ValidLine{VARIABLE_INIT("^[A-Za-z]+"),METHOD_START("\\{\\s*$"), METHOD_END("^\\s*\\}\\s*$");
@@ -41,7 +38,6 @@ public class SJavaFile extends Scope {
 	 * Method gets the methods defined in the scope
 	 * @return all the methods defined in this file
 	 */
-	public HashMap<String,Method> getMethods() {
 
 	public Map<String,Method> getMethods() {
 
@@ -65,7 +61,7 @@ public class SJavaFile extends Scope {
 						continue;
 					} else if (this.bracketCount == 1) { //exactly one not closed scope left
 						Method method = MethodFactory.createMethod(this, myContent.subList(this.scopeStart,i));
-						methodsList.put(method.getName(), method);
+						this.methodsList.put(method.getName(), method);
 						this.mySubScopes.add(method);
 						this.bracketCount --;
 						continue;
