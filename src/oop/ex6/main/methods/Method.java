@@ -165,13 +165,23 @@ public class Method extends Scope {
 					String[] theArgs = match.group(1).split(",");
 					if(theArgs.length == methodArgs.length){//the amount of arguments is legal
 						for(int i = 0; i < theArgs.length ; i ++){
-							if(theMethod.getVariable(theArgs[i]) != null){ //found variable with such name
-								
+							Variable theVar = theMethod.getVariable(theArgs[i]);
+							if(theVar != null){ //found variable with such name
+								if(theVar.getType().equals(methodArgs[i].getType())){ //variable mathces the type of the argument
+									continue;
+								}else{
+									return false; //type doesn't fit
+								}
 							}else{ //no variable with such name - consider it constant
-								
+								if(methodArgs[i].getType().getValuePattern().matcher(theArgs[i]).find()){
+									continue; //constant matches the type of the argument
+									
+								}else{
+									return false;
+								}
 							}
 						}
-						return true; //only of every condition was met
+						return true; //only of every condition was met for every parametre
 					}
 				}
 			}
@@ -180,5 +190,6 @@ public class Method extends Scope {
 		}
 		
 	}
+	
 
 }

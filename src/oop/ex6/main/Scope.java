@@ -49,7 +49,7 @@ public abstract class Scope {
 		return myVariables;
 	}
 	
-	/**
+	/**s
 	 * Gets a variable line and adds all variables defined by it to this scope's list of variables.
 	 * If no variables were defined, this method does not change this scope's members.
 	 * @param line The string of the variable line.
