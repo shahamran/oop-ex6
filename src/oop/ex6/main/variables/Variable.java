@@ -59,6 +59,8 @@ public class Variable {
 	public void setValue(String newVal) throws VariableException {
 		if (isFinal && isInit)
 			throw new AssignToFinalException();
+		if (newVal == null)
+			return;
 		Pattern valPattern; // Checks if the value is in valid syntax.
 		if ((valPattern = myType.getValuePattern()) != null) {
 			Matcher match = valPattern.matcher(newVal);

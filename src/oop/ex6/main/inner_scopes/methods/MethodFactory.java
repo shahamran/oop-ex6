@@ -1,10 +1,11 @@
-package oop.ex6.main.methods;
+package oop.ex6.main.inner_scopes.methods;
 
 import java.util.*;
 import java.util.regex.*;
 
 import oop.ex6.main.IllegalCodeException;
-import oop.ex6.main.Scope;
+import oop.ex6.main.SJavaFile;
+import oop.ex6.main.inner_scopes.*;
 
 public class MethodFactory {
 	
@@ -13,13 +14,10 @@ public class MethodFactory {
 	// regex for parsing the first line and the body of the scope
 	private static final String SCOPE_START = "\\{\\s*$", 
 								VOID = "^\\s*(void)\\s+", METHOD_NAME = "([A-Za-z]\\w*)\\s*",
-								ARGS_LINE =  "\\((.*)\\)\\s*",
 								ARGS_SPLIT = ",";
-						
 
-	private static Pattern argsPattern = Pattern.compile(ARGS_LINE),
-						   methodNamePattern = Pattern.compile(METHOD_NAME),
-						   firstLinePattern = Pattern.compile(VOID+METHOD_NAME+ARGS_LINE+SCOPE_START);
+	private static Pattern methodNamePattern = Pattern.compile(METHOD_NAME),
+					  firstLinePattern = Pattern.compile(VOID+METHOD_NAME+InnerScope.ARGS_LINE+SCOPE_START);
 						   
 	
 	
@@ -31,7 +29,7 @@ public class MethodFactory {
 	 * @throws IllegalInitLineException is thrown if the line doesn't stand
 	 *  	   by demands of proper initialization line
 	 */
-	public static ArrayList<String> parseInitLine(String line) throws IllegalMethodNameException,
+	private static List<String> parseMethodInitLine(String line) throws IllegalMethodNameException,
 																	  IllegalParamsException,
 																	  IllegalInitLineException{
 		ArrayList<String> params = new ArrayList<String>();
@@ -45,7 +43,7 @@ public class MethodFactory {
 				throw new IllegalMethodNameException(); //shouldn't actually happen - already checked
 			}
 			//looking for arguments
-			Matcher argsMatch = argsPattern.matcher(line);
+			Matcher argsMatch = InnerScope.argsPattern.matcher(line);
 			if(argsMatch.find()){
 				params.add(argsMatch.group(1)); // should capture what is inside the brackets
 			}else{
@@ -65,16 +63,11 @@ public class MethodFactory {
 	 * @return Method method mew method created
 	 * @throws IllegalMethodException thrown if occured problem with parsing
 	 */
-	public static Method createMethod(Scope parent, List<String> code) throws IllegalCodeException{
-		try{
-			ArrayList<String> param = parseInitLine(code.get(INIT_LINE_IDX));
-			String newName = param.get(0);
-			String[] newArgs = param.get(1).split(ARGS_SPLIT);
-			List<String> newContent = code.subList(1, code.size() - 1);
-			return new Method(newName,newArgs, parent, newContent);
-			
-		}catch(IllegalMethodException e){
-			throw new IllegalMethodException();
-		}
+	public static Method createMethod(SJavaFile parent, List<String> code) throws IllegalCodeException {
+		List<String> param = parseMethodInitLine(code.get(INIT_LINE_IDX));
+		String newName = param.get(0);
+		String[] newArgs = param.get(1).split(ARGS_SPLIT);
+		List<String> newContent = code.subList(1, code.size() - 1);
+		return new Method(newName,newArgs, parent, newContent);
 	}
 }

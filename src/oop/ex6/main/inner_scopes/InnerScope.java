@@ -1,27 +1,32 @@
-package oop.ex6.main;
+package oop.ex6.main.inner_scopes;
 
 import java.util.List;
 import java.util.regex.*;
 
-import oop.ex6.main.methods.Method;
+import oop.ex6.main.IllegalCodeException;
+import oop.ex6.main.SJavaFile;
+import oop.ex6.main.Scope;
+import oop.ex6.main.inner_scopes.methods.Method;
 
-public abstract class InnerScope extends Scope {
+public class InnerScope extends Scope {
+	public static final String ARGS_LINE =  "\\((.*)\\)\\s*";
+	public static Pattern argsPattern = Pattern.compile(ARGS_LINE);
 	protected enum ValidLine{SCOPE_START("\\{\\s*$"), SCOPE_END("^\\s*\\}\\s*$"),
-						     METHOD_CALL("^\\s*[A-Za-z]\\w*\\s*\\(.*\\)\\s*;$"), VARIABLE_LINE(";\\s*$");
+						     METHOD_CALL("^\\s*[A-Za-z]\\w*\\s*\\(.*\\)\\s*;$"), VARIABLE_LINE(";\\s*$"),
+						     RETURN_STATEMENT("^\\s*return\\s*;$");
 		Pattern myPattern;
 	
 		ValidLine(String regex) {
 			myPattern = Pattern.compile(regex);
 		}
 		
-		protected Pattern getPattern() {
+		public Pattern getPattern() {
 			return myPattern;
 		}
 	}
 	
 	protected InnerScope(Scope newParent, List<String> newContent) {
 		super(newParent, newContent);
-		// TODO Auto-generated constructor stub
 	}
 	
 	
@@ -42,8 +47,12 @@ public abstract class InnerScope extends Scope {
 				continue;
 			}
 			
-			if (isMatch(ValidLine.METHOD_CALL.getPattern(),line)) {
-				Method.handleMethodCall(line);
+			if (SJavaFile.isExactMatch(ValidLine.METHOD_CALL.getPattern(),line)) {
+				Method.handleMethodCall(line, getAncestor(this));
+				continue;
+			}
+			
+			if (SJavaFile.isExactMatch(ValidLine.RETURN_STATEMENT.getPattern(), line)) {
 				continue;
 			}
 			
@@ -63,11 +72,20 @@ public abstract class InnerScope extends Scope {
 			bracketCount--;
 		} else if (bracketCount == 1) {
 			bracketCount--;
-			// Create new condition / loop \\
-			// read it.
+			List<String> newContent = myContent.subList(scopeStart, i);
+			InnerScope is = InnerScopeFactory.createInnerScope(this, newContent);
+			is.readScope();
 		} else {
 			throw new IllegalCodeException(line);
 		}
+	}
+	
+	public static SJavaFile getAncestor(InnerScope scope) {
+		Scope currScope = scope;
+		while (currScope.getParent() != null) {
+			currScope = currScope.getParent();
+		}
+		return (SJavaFile) currScope;
 	}
 	
 	private static boolean isMatch(Pattern p, String s) {

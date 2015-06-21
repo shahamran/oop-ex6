@@ -1,4 +1,4 @@
-package oop.ex6.main.methods;
+package oop.ex6.main.inner_scopes.methods;
 
 
 public class IllegalMethodNameException extends IllegalMethodException {

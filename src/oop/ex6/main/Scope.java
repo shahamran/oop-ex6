@@ -67,18 +67,23 @@ public abstract class Scope {
 	 * the scope and all the outer ones
 	 * @param varName name of the Variable we are looking for
 	 * @return the variable with such name or null if not found
+	 * @throws VariableException 
 	 */
-	public Variable getVariable(String varName){
+	public Variable getVariable(String varName) throws VariableException{
 		Variable theVar = null;
 		Scope theScope = this;
 		while (theScope != null) {
 			theVar = theScope.getVariables().get(varName);
 			if (theVar != null) {
-				return theVar;
+				break;
 			} else {
 				theScope = theScope.getParent();
 			}
 		}
-		return theVar;
+		if (theScope == this || theVar == null)
+			return theVar;
+		String argStr = theVar.getType().toString() + " " + varName;
+		Variable newVar = VariableFactory.createArgumentVariable(argStr, this);
+		return newVar;
 	}
 }

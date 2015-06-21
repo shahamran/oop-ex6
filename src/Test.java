@@ -4,7 +4,6 @@ import java.io.*;
 import oop.ex6.main.*;
 
 public class Test {
-	private static Scope s = new SJavaFile(new ArrayList<String>());
 	private static final String TEST_LOCATION = "C:\\Cygwin\\home\\Ran\\safe\\oop-ex6\\tests\\tests\\",
 								TESTS_FILE = "C:\\Cygwin\\home\\Ran\\safe\\oop-ex6\\tests\\sjavac_tests.txt";
 	private static ArrayList<String[]> tests = new ArrayList<String[]>();

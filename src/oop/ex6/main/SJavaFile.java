@@ -3,11 +3,11 @@ package oop.ex6.main;
 import java.util.*;
 import java.util.regex.*;
 
-import oop.ex6.main.methods.Method;
-import oop.ex6.main.methods.MethodFactory;
+import oop.ex6.main.inner_scopes.methods.Method;
+import oop.ex6.main.inner_scopes.methods.MethodFactory;
 
 public class SJavaFile extends Scope {
-	private List<Scope> mySubScopes = new ArrayList<Scope>();
+	private List<Method> mySubScopes = new ArrayList<Method>();
 	private HashMap<String, Method> methodsList;
 		
 
@@ -50,7 +50,6 @@ public class SJavaFile extends Scope {
 	 */
 	@Override
 	public void readScope() throws IllegalCodeException {
-		//int bracketCount = 0, scopeStart = 0;
 		String line;
 		for (int i = 0; i < myContent.size(); i++) {
 			line = myContent.get(i);
@@ -88,8 +87,8 @@ public class SJavaFile extends Scope {
 			}
 		}
 		// Actually reading
-		for(Scope subScope : mySubScopes){
-			subScope.readScope();
+		for(Method method : mySubScopes){
+			method.readScope();
 		}
 	}
 	
@@ -112,6 +111,17 @@ public class SJavaFile extends Scope {
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * Checks if a certain pattern exactly matches a given string argument.
+	 * @param p The compiled pattern
+	 * @param s The string to search
+	 * @return True if the strings matches the pattern, false otherwise.
+	 */
+	public static boolean isExactMatch(Pattern p, String s) {
+		Matcher m = p.matcher(s);
+		return m.matches();
 	}
 	
 	/**
