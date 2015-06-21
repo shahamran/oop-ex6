@@ -91,6 +91,10 @@ public class Variable {
 		isFinal = true;
 	}
 	
+	public boolean isFinal() {
+		return isFinal;
+	}
+	
 	/**
 	 * Sets the variable as if it was initialized. Only used for 'toy' variables - for methods.
 	 */

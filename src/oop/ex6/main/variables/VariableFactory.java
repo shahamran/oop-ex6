@@ -64,6 +64,15 @@ public class VariableFactory {
 		return variable;
 	}
 	
+	public static Variable copyVariable(Variable toCopy) throws VariableException {
+		Variable newVar = new Variable(toCopy.getName(), toCopy.getType());
+		if (toCopy.isInit())
+			newVar.setValue(toCopy.getValue());
+		if (toCopy.isFinal())
+			newVar.setFinal();
+		return newVar;
+	}
+	
 	/**
 	 * Extracts the variable type from the definition line.
 	 * @param line The string of the definition line - assumes only that it matches the *type* pattern.
@@ -146,7 +155,7 @@ public class VariableFactory {
 			if (currVariable == null)
 				throw new VariableException(); // Shouldn't be reached.
 			// Check for name overloading.
-			if (parentScope.getVariable(currVariable.getName()) != null) {
+			if (parentScope.getVariables().get(currVariable.getName()) != null) {
 				throw new VariableNameOverloadException(currVariable.getName());
 			}
 			if (isFinal) { // Set as constant if needed.
@@ -182,8 +191,9 @@ public class VariableFactory {
 		} else {
 			throw new BadVariableLineException(variableArgs);
 		}
+		
 		// If there exists another variable with the same name in the same scope
-		if (parentScope.getVariable(name) != null) {
+		if (parentScope.getVariables().get(name) != null) {
 			throw new VariableNameOverloadException(name);
 		}
 		Variable variable = new Variable(name,type);

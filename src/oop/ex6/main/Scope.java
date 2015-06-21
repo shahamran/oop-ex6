@@ -22,7 +22,7 @@ public abstract class Scope {
 	 */
 	protected Scope(Scope newParent, List<String> newContent) {
 		myParent = newParent;
-		myContent = newContent;
+		myContent = newContent != null ? newContent : new ArrayList<String>();
 		myVariables = new HashMap<String, Variable>();
 	}
 	
@@ -84,6 +84,6 @@ public abstract class Scope {
 		}
 		if (theVar == null)
 			return theVar;
-		return new Variable(theVar);
+		return VariableFactory.copyVariable(theVar);
 	}
 }

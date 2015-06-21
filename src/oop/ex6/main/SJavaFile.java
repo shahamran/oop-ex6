@@ -53,6 +53,13 @@ public class SJavaFile extends Scope {
 		String line;
 		for (int i = 0; i < myContent.size(); i++) {
 			line = myContent.get(i);
+			if (isMatch(ValidLine.METHOD_START.getPattern(), line) != null) {
+				if (bracketCount == 0)
+					scopeStart = i;
+				bracketCount++;
+				continue;
+			}
+			
 			if (bracketCount > 0) { //some inner scope is open
 				if (isMatch(ValidLine.METHOD_END.getPattern(),line) != null) {
 					if (bracketCount > 1) {
@@ -67,27 +74,21 @@ public class SJavaFile extends Scope {
 					} else {
 						throw new IllegalCodeException(i,line);
 					}
-					
-				} else if (isMatch(ValidLine.METHOD_START.getPattern(),line) != null) {
-					bracketCount++;
-					continue;
 				} else {
 					continue;
 				}
-			} else if (isMatch(ValidLine.METHOD_START.getPattern(),line) != null) {
-				scopeStart = i;
-				bracketCount++;
-				continue;
-			} else if (isMatch(ValidLine.VARIABLE_INIT.getPattern(),line) != null) {
+			}
+			
+			if (isMatch(ValidLine.VARIABLE_INIT.getPattern(),line) != null) {
 				try {
 					super.handleVariableLine(line);
 				} catch (IllegalCodeException e) {
 					throw new IllegalCodeException(i,line, e.getMessage());
 				}
 				continue;
-			} else { // If not one of the following
-				throw new IllegalCodeException(i, line);
 			}
+			// If not one of the following
+			throw new IllegalCodeException(i, line);
 		}
 		if (bracketCount != 0)
 			throw new IllegalCodeException("Unbalanced brackets");

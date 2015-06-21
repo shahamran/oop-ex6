@@ -36,14 +36,16 @@ public class InnerScope extends Scope {
 		String line;
 		for (int i = 0; i < myContent.size() ; i++) {
 			line = myContent.get(i);
-			if (isMatch(ValidLine.SCOPE_END.getPattern(),line)) {
-				handleInnerScope(i,line);
-				continue;
-			}
 			
 			if (isMatch(ValidLine.SCOPE_START.getPattern(),line)) {
 				if (bracketCount == 0)
-					bracketCount++;
+					scopeStart = i;
+				bracketCount++;
+				continue;
+			}
+			
+			if (isMatch(ValidLine.SCOPE_END.getPattern(),line)) {
+				handleInnerScope(i,line);
 				continue;
 			}
 			
@@ -63,7 +65,8 @@ public class InnerScope extends Scope {
 			// This means this is not a valid line.
 			throw new IllegalCodeException(line);
 		} // For ends here.
-		
+		if (bracketCount != 0)
+			throw new IllegalCodeException("Unbalanced brackets");
 
 	}
 	

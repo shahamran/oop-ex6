@@ -53,7 +53,10 @@ public class InnerScopeFactory {
 				throw new BadInnerScopeArgumentException(arg);
 			}
 		}
-		List<String> newContent = content.subList(1, content.size() - 1);
+		List<String> newContent = null;
+		if (content.size() > 1) {
+			newContent = content.subList(1, content.size() - 1);
+		}
 		return new InnerScope(parentScope, newContent);
 	}
 }
