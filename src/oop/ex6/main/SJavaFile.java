@@ -7,9 +7,8 @@ import oop.ex6.main.methods.Method;
 import oop.ex6.main.methods.MethodFactory;
 
 public class SJavaFile extends Scope {
-	
+	private List<Scope> mySubScopes = new ArrayList<Scope>();
 	private HashMap<String, Method> methodsList;
-	int bracketCount = 0, scopeStart = 0;
 		
 
 	enum ValidLine{VARIABLE_INIT("^[A-Za-z]+"),METHOD_START("\\{\\s*$"), METHOD_END("^\\s*\\}\\s*$");
@@ -51,47 +50,68 @@ public class SJavaFile extends Scope {
 	 */
 	@Override
 	public void readScope() throws IllegalCodeException {
+		//int bracketCount = 0, scopeStart = 0;
 		String line;
 		for (int i = 0; i < myContent.size(); i++) {
 			line = myContent.get(i);
-			if (this.bracketCount > 0) { //some inner scope is open
-				if (isMatch(ValidLine.METHOD_END.getPattern(),line)) {
-					if (this.bracketCount > 1) {
-						this.bracketCount--;
+			if (bracketCount > 0) { //some inner scope is open
+				if (isMatch(ValidLine.METHOD_END.getPattern(),line) != null) {
+					if (bracketCount > 1) {
+						bracketCount--;
 						continue;
 					} else if (this.bracketCount == 1) { //exactly one not closed scope left
-						Method method = MethodFactory.createMethod(this, myContent.subList(this.scopeStart,i));
-						this.methodsList.put(method.getName(), method);
-						this.mySubScopes.add(method);
-						this.bracketCount --;
+						Method method = MethodFactory.createMethod(this, myContent.subList(scopeStart,i+1));
+						methodsList.put(method.getName(), method);
+						mySubScopes.add(method);
+						bracketCount --;
 						continue;
 					} else {
-						throw new IllegalCodeException(line,i);
+						throw new IllegalCodeException(i,line);
 					}
 					
 				} else {
 					continue;
 				}
-			} else if (isMatch(ValidLine.VARIABLE_INIT.getPattern(),line)) {
-				super.handleVariableLine(line);
+			} else if (isMatch(ValidLine.METHOD_START.getPattern(),line) != null) {
+				scopeStart = i;
+				bracketCount++;
 				continue;
-			} else if (isMatch(ValidLine.METHOD_START.getPattern(),line)) {
-				this.scopeStart = i;
-				this.bracketCount++;
+			} else if (isMatch(ValidLine.VARIABLE_INIT.getPattern(),line) != null) {
+				try {
+					super.handleVariableLine(line);
+				} catch (IllegalCodeException e) {
+					throw new IllegalCodeException(i,line, e.getMessage());
+				}
 				continue;
 			} else { // If not one of the following
-				throw new IllegalCodeException(line, i);
+				throw new IllegalCodeException(i, line);
 			}
 		}
 		// Actually reading
-		for(Scope subScope : this.mySubScopes){
+		for(Scope subScope : mySubScopes){
 			subScope.readScope();
 		}
 	}
 	
-	private boolean isMatch(Pattern p, String s) {
+
+	/**
+	 * Checks if a certain pattern matches a given string argument.
+	 * @param p The compiled pattern
+	 * @param s The string to search
+	 * @return null if the expression is not found in the text, or the string caught by the
+	 * first capturing group if a match was found. Note that this method uses find() and not
+	 * matches(), meaning it only looks for a substring that matches and not the whole string.
+	 */
+	public static String isMatch(Pattern p, String s) {
 		Matcher m = p.matcher(s);
-		return m.find();
+		if (m.find()) {
+			if (m.groupCount() > 0) {
+				return m.group(1);
+			} else {
+				return m.group();
+			}
+		}
+		return null;
 	}
 	
 	/**
@@ -99,7 +119,7 @@ public class SJavaFile extends Scope {
 	 * @param methodName name of the method of interest
 	 * @return the Method with such name or null if none found
 	 */
-	public Method getMethod(String methodName){
+	public Method getMethod(String methodName) {
 		return methodsList.get(methodName);
 		
 	}

@@ -5,58 +5,52 @@ import java.util.*;
 import java.util.regex.*;
 
 /**
- *
+ * Parses the SJava file by lines, ignoring whitespace lines and comments.
  */
 public class FileParser {
-	private List<String> fileContent = new ArrayList<String>();
 	private static final String SJAVA_SUFFIX_REGEX = "(?:\\.sjava)$", COMMENT_LINE = "^(?:\\s*//)";
 	private static Pattern sjavaFilePattern = Pattern.compile(SJAVA_SUFFIX_REGEX),
 						   commentPattern = Pattern.compile(COMMENT_LINE),
 						   hasNonWhitespacePattern = Pattern.compile("\\S");
 	
 	/**
-	 * Constructs a new FileParser object and tries to parse the file.
-	 * @param pathName The path of a SJava file.
-	 * @throws IllegalSJavaFileException If the file given was not a valid SJava file.
+	 * Gets a file path and reads the file's content. Returns a trimmed list of lines.
+	 * @param filePath The path for the SJava file.
+	 * @return A trimmed list of content. Each element in this list is a line. Comment lines 
+	 * and whitespace lines are excluded.
+	 * @throws IllegalSJavaFileException If the file given is not a valid SJava file. 
 	 */
-	public FileParser(String pathName) throws IllegalSJavaFileException {			
-		File myFile = new File(pathName);
-		if (myFile.exists() && myFile.isFile() && isMatch(sjavaFilePattern, pathName)) {
+	public static List<String> getFileContent(String filePath) throws IllegalSJavaFileException {
+		File myFile = new File(filePath);
+		if (myFile.exists() && myFile.isFile() && isMatch(sjavaFilePattern, filePath)) {
 			try {
-				fileContent = readFile(myFile);
+				return readFile(myFile);
 			} catch (IOException e) {
-				throw new IllegalSJavaFileException(pathName);
+				throw new IllegalSJavaFileException(filePath);
 			}
 		} else {
-			throw new IllegalSJavaFileException(pathName);
+			throw new IllegalSJavaFileException(filePath);
 		}
 	}
 	
 	/**
-	 * @return A trimmed list of content. Each element in this list is a line. Comment lines 
-	 * and whitespace lines are excluded.
-	 */
-	public List<String> getFileContent() {
-		return fileContent;
-	}
-	
-	/**
 	 * Reads the file line by line and adds it to the contents list.
-	 * @param file The sjava file.
+	 * @param file The SJava file object.
 	 * @return A list of the file's lines, excluding whitespace and comment lines.
 	 * @throws IOException
 	 */
-	private ArrayList<String> readFile(File file) throws IOException {
+	private static ArrayList<String> readFile(File file) throws IOException {
 		ArrayList<String> content = new ArrayList<String>();
-		try (
+		try ( // Try with resources...
 				FileReader reader = new FileReader(file);
-				Scanner scanner = new Scanner(reader)
-				) {
+				BufferedReader br = new BufferedReader(reader);
+				Scanner scanner = new Scanner(br) 
+													) {
 			String line;
 			while (scanner.hasNext()) {
 				line = scanner.nextLine();
 				if (isMatch(commentPattern,line) || !isMatch(hasNonWhitespacePattern,line))
-					continue;
+					continue; // Skip comments and whitespace lines
 				content.add(line);
 			}
 			return content;
@@ -66,6 +60,7 @@ public class FileParser {
 	}
 	
 	/**
+	 * A small helper method to check for pattern matches in a string.
 	 * @param p A regex pattern to match.
 	 * @param s The string to check.
 	 * @return True if the string matches the pattern, false otherwise.

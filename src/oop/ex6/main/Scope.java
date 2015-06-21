@@ -13,9 +13,7 @@ public abstract class Scope {
 	protected Scope myParent;
 	protected List<String> myContent;
 	protected HashMap<String, Variable> myVariables;
-	protected ArrayList<Scope> mySubScopes;
-	protected int bracketCount = 0;
-	protected int scopeStart = 0;
+	protected int bracketCount = 0, scopeStart = 0;
 	
 	/**
 	 * Constructs a new Scope object.
@@ -25,7 +23,6 @@ public abstract class Scope {
 	protected Scope(Scope newParent, List<String> newContent) {
 		myParent = newParent;
 		myContent = newContent;
-		mySubScopes = new ArrayList<Scope>();
 		myVariables = new HashMap<String, Variable>();
 	}
 	
@@ -49,7 +46,7 @@ public abstract class Scope {
 		return myVariables;
 	}
 	
-	/**s
+	/**
 	 * Gets a variable line and adds all variables defined by it to this scope's list of variables.
 	 * If no variables were defined, this method does not change this scope's members.
 	 * @param line The string of the variable line.
@@ -60,9 +57,6 @@ public abstract class Scope {
 		List<Variable> newVariables = VariableFactory.parseVariableLine(line, this);
 		if (newVariables != null) {
 			for (Variable var : newVariables) {
-				if (myVariables.get(var.getName()) != null) {
-					throw new VariableNameOverloadException(var.getName());
-				}
 				myVariables.put(var.getName(), var);
 			}
 		}
@@ -74,7 +68,7 @@ public abstract class Scope {
 	 * @param varName name of the Variable we are looking for
 	 * @return the variable with such name or null if not found
 	 */
-	protected Variable getVariable(String varName){
+	public Variable getVariable(String varName){
 		Variable theVar = null;
 		Scope theScope = this;
 		while (theScope != null) {

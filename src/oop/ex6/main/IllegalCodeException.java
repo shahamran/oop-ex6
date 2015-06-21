@@ -11,8 +11,12 @@ public class IllegalCodeException extends SJavaException {
 		super(msg);
 	}
 	
-	public IllegalCodeException(String badLine, int lineNum) {
-		super("Line number: " + lineNum + " is not valid: " + badLine);
+	public IllegalCodeException(int lineNum, String badLine) {
+		super("Error in line " + lineNum + ": " + badLine);
+	}
+	
+	public IllegalCodeException(int lineNum, String badLine, String errMsg) {
+		this(lineNum, badLine + ":\n" + errMsg);
 	}
 	
 }

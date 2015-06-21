@@ -3,6 +3,7 @@ package oop.ex6.main.methods;
 import java.util.*;
 import java.util.regex.*;
 
+import oop.ex6.main.IllegalCodeException;
 import oop.ex6.main.Scope;
 
 public class MethodFactory {
@@ -10,9 +11,9 @@ public class MethodFactory {
 	private static final int INIT_LINE_IDX = 0;
 	
 	// regex for parsing the first line and the body of the scope
-	private static final String SCOPE_START = "{$", 
-								VOID = "^\\s*\\bvoid\\b", METHOD_NAME = "\\b([A-Za-z]\\w*)\\b",
-								ARGS_LINE =  "\\((.*)\\)",
+	private static final String SCOPE_START = "\\{\\s*$", 
+								VOID = "^\\s*(void)\\s+", METHOD_NAME = "([A-Za-z]\\w*)\\s*",
+								ARGS_LINE =  "\\((.*)\\)\\s*",
 								ARGS_SPLIT = ",";
 						
 
@@ -39,7 +40,7 @@ public class MethodFactory {
 			//looking for real name
 			Matcher nameMatch = methodNamePattern.matcher(line);
 			if(nameMatch.find()){
-				params.add(nameMatch.group(2)); //first will be void, second - the name
+				params.add(lineMatch.group(2)); //first will be void, second - the name
 			}else{
 				throw new IllegalMethodNameException(); //shouldn't actually happen - already checked
 			}
@@ -64,11 +65,11 @@ public class MethodFactory {
 	 * @return Method method mew method created
 	 * @throws IllegalMethodException thrown if occured problem with parsing
 	 */
-	public static Method createMethod(Scope parent, List<String> code) throws IllegalMethodException{
+	public static Method createMethod(Scope parent, List<String> code) throws IllegalCodeException{
 		try{
 			ArrayList<String> param = parseInitLine(code.get(INIT_LINE_IDX));
-			String newName = param.get(1);
-			String[] newArgs = param.get(2).split(ARGS_SPLIT);
+			String newName = param.get(0);
+			String[] newArgs = param.get(1).split(ARGS_SPLIT);
 			List<String> newContent = code.subList(1, code.size() - 1);
 			return new Method(newName,newArgs, parent, newContent);
 			

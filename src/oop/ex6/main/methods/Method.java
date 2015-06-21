@@ -1,28 +1,25 @@
 package oop.ex6.main.methods;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
-import oop.ex6.main.IllegalCodeException;
-import oop.ex6.main.SJavaFile;
-import oop.ex6.main.Scope;
-import oop.ex6.main.variables.Variable;
-import oop.ex6.main.variables.VariableException;
-import oop.ex6.main.variables.VariableFactory;
+import oop.ex6.main.*;
+import oop.ex6.main.variables.*;
 
 public class Method extends Scope {
-	protected String myName;
-	protected Variable[] arguments;
+	private String myName;
+	private static SJavaFile myParent;
+	private Variable[] arguments;
 	
-	private static final String  METHOD_NAME ="\\b([A-Za-z]\\w*)\\b" ,
-								 ARGS  = "\\(.*\\);";
+	private static final String  METHOD_NAME ="^\\s*([A-Za-z]\\w*)\\b" ,
+								 ARGS  = "\\((.*)\\)";
 	
 	private static Pattern argsPattern = Pattern.compile(ARGS),
-						   methodNamePattern = Pattern.compile(METHOD_NAME);
+						   methodNamePattern = Pattern.compile(METHOD_NAME),
+						   methodCallPattern = Pattern.compile(METHOD_NAME+ARGS);
 			
-	enum ValidLine{SINGLE_LINE("^.*;$"),COND_START("{$"), COND_END("^\\s*}$"), METHOD_CALL(METHOD_NAME + ARGS),
-					RETURN_LINE("^\\s*\\b(return)\b;$");
+	enum ValidLine{SINGLE_LINE(";$"),COND_START("\\{\\s*$"), COND_END("^\\s*\\}\\s*$"), 
+					METHOD_CALL(METHOD_NAME + ARGS), RETURN_LINE("^\\s*\\b(return)\b;$");
 	Pattern myRegex;
 	ValidLine(String regex) {
 		myRegex = Pattern.compile(regex);
@@ -33,22 +30,24 @@ public class Method extends Scope {
 	}
 }
 	
-	protected Method(String newName, String[] newArguments, Scope newParent, List<String> newContent) 
-																		throws IllegalMethodException{
+	protected Method(String newName, String[] newArguments, SJavaFile newParent, List<String> newContent) 
+																		throws IllegalCodeException{
 		super(newParent, newContent);
 		myName = newName;
 		try{
 			for(String arg : newArguments){
-				Variable newVar = VariableFactory.createArgumentVariable(arg);
+				if (!Pattern.compile("\\S").matcher(arg).find())
+					continue;
+				Variable newVar = VariableFactory.createArgumentVariable(arg,this);
 				this.myVariables.put(newVar.getName(),newVar); 
 			}
 		}catch(VariableException e){
-			throw new IllegalMethodException();
+			throw e;
 		}
 	}
 
 	@Override //exactly as not elegant as the File.readScope()
-	public void readScope() throws IllegalMethodException {
+	public void readScope() throws IllegalMethodException, VariableException {
 		Matcher match;
 		
 		//check if ended with return statement
@@ -108,7 +107,7 @@ public class Method extends Scope {
 						VariableFactory.parseVariableLine(line, this);
 						continue;
 					}catch(VariableException e){
-						throw new IllegalMethodException();
+						throw e;
 					}
 				}
 			
@@ -121,15 +120,6 @@ public class Method extends Scope {
 		
 		
 		//Actually reading inner scopes
-		try{
-			if(mySubScopes.size() != 0){
-				for(Scope subScope :this.mySubScopes){
-					subScope.readScope();
-				}
-			}
-		}catch(IllegalCodeException e){
-			throw new IllegalMethodException();
-		}
 
 	}
 
@@ -146,6 +136,37 @@ public class Method extends Scope {
 	 */
 	public Variable[] getArgs(){
 		return arguments;
+	}
+	
+	
+	
+	public static void handleMethodCall(String line) throws IllegalMethodCallException {
+		String name; String[] args;
+		Matcher match = methodCallPattern.matcher(line);
+		if (!match.find())
+			throw new IllegalMethodCallException(line);
+		
+		name = match.group(1); args = match.group(2).split("\\s*,\\s*");
+		Method theMethod = myParent.getMethod(name);
+		if (theMethod == null) {
+			throw new IllegalMethodCallException(line);
+		}
+		
+		Variable[] methodArgs = theMethod.getArgs();
+		if (methodArgs.length != args.length)
+			throw new IllegalMethodCallException(line);
+		
+		Variable v;
+		for (int i = 0; i < methodArgs.length ; i++) {
+			v = methodArgs[i];
+			if (SJavaFile.isMatch(v.getType().getValuePattern(), args[i]) != null) {
+				continue;
+			} else if (theMethod.getVariable(args[i]) != null) {
+				continue;
+			} else {
+				throw new IllegalMethodCallException(line);
+			}
+		}
 	}
 	
 	/**
@@ -169,7 +190,7 @@ public class Method extends Scope {
 							if(theVar != null){ //found variable with such name
 								if(theVar.getType().equals(methodArgs[i].getType())){ //variable match1es the type of the argument
 									continue;
-								}else{
+								} else {
 									return false; //type doesn't fit
 								}
 							}else{ //no variable with such name - consider it constant
