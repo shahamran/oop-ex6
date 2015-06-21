@@ -68,6 +68,9 @@ public class SJavaFile extends Scope {
 						throw new IllegalCodeException(i,line);
 					}
 					
+				} else if (isMatch(ValidLine.METHOD_START.getPattern(),line) != null) {
+					bracketCount++;
+					continue;
 				} else {
 					continue;
 				}
@@ -86,6 +89,8 @@ public class SJavaFile extends Scope {
 				throw new IllegalCodeException(i, line);
 			}
 		}
+		if (bracketCount != 0)
+			throw new IllegalCodeException("Unbalanced brackets");
 		// Actually reading
 		for(Method method : mySubScopes){
 			method.readScope();

@@ -27,6 +27,14 @@ public class Variable {
 		}
 	}
 	
+	public Variable(Variable oldVar) {
+		myName = oldVar.getName();
+		myType = oldVar.getType();
+		myVal = oldVar.myVal;
+		isFinal = oldVar.isFinal;
+		isInit = oldVar.isInit;
+	}
+	
 	/**
 	 * @return The name of this variable object.
 	 */

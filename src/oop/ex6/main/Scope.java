@@ -70,8 +70,10 @@ public abstract class Scope {
 	 * @throws VariableException 
 	 */
 	public Variable getVariable(String varName) throws VariableException{
-		Variable theVar = null;
-		Scope theScope = this;
+		Variable theVar = this.getVariables().get(varName);
+		if (theVar != null)
+			return theVar; 
+		Scope theScope = this.getParent();
 		while (theScope != null) {
 			theVar = theScope.getVariables().get(varName);
 			if (theVar != null) {
@@ -80,10 +82,8 @@ public abstract class Scope {
 				theScope = theScope.getParent();
 			}
 		}
-		if (theScope == this || theVar == null)
+		if (theVar == null)
 			return theVar;
-		String argStr = theVar.getType().toString() + " " + varName;
-		Variable newVar = VariableFactory.createArgumentVariable(argStr, this);
-		return newVar;
+		return new Variable(theVar);
 	}
 }

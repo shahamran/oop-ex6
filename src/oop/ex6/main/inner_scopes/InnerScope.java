@@ -13,7 +13,7 @@ public class InnerScope extends Scope {
 	public static Pattern argsPattern = Pattern.compile(ARGS_LINE);
 	protected enum ValidLine{SCOPE_START("\\{\\s*$"), SCOPE_END("^\\s*\\}\\s*$"),
 						     METHOD_CALL("^\\s*[A-Za-z]\\w*\\s*\\(.*\\)\\s*;$"), VARIABLE_LINE(";\\s*$"),
-						     RETURN_STATEMENT("^\\s*return\\s*;$");
+						     RETURN_STATEMENT("^\\s*return\\s*;\\s*$");
 		Pattern myPattern;
 	
 		ValidLine(String regex) {
@@ -62,7 +62,7 @@ public class InnerScope extends Scope {
 			}
 			// This means this is not a valid line.
 			throw new IllegalCodeException(line);
-		}
+		} // For ends here.
 		
 
 	}
