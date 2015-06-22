@@ -1,4 +1,4 @@
-String b = "a";
+int b = 2;
 void foo(int a) {
 foo(b);
 return;

@@ -1,7 +1,7 @@
 import java.util.*;
 import java.util.regex.*;
 import java.io.*;
-import oop.ex6.main.*;
+import oop.ex6.main.Sjavac;
 
 public class TestEX6 {
 	//private static final String TEST_LOCATION = "C:\\Cygwin\\home\\Ran\\safe\\oop-ex6\\tests\\tests\\";
