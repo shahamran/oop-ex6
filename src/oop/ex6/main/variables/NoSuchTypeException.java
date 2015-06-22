@@ -2,7 +2,6 @@ package oop.ex6.main.variables;
 
 /**
  * Thrown if a bad type name was given upon initialization.
- * @author Ran
  */
 public class NoSuchTypeException extends VariableException {
 	private static final long serialVersionUID = 1L;

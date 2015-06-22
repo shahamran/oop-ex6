@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import oop.ex6.main.variables.*;
 
 /**
- * This class represents a scope in the SJava file. A scope is an object that holds a map
+ * This abstract class represents a scope in the SJava file. A scope is an object that holds a map
  * of variables defined in it, a reference to the scope in which it is nested, the lines of code
  * in this scope and a list of all Scopes nested in it.
  */

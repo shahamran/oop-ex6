@@ -10,8 +10,8 @@ public class IllegalMethodException extends IllegalCodeException {
 		super("Illegal method");
 	}
 	
-	public IllegalMethodException(String msg) {
-		super(msg);
+	public IllegalMethodException(String badLine) {
+		super("Illegal method line: " + badLine);
 	}
 	
 }

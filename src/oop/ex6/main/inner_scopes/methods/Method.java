@@ -20,7 +20,8 @@ public class Method extends InnerScope {
 		super(newParent, newContent);
 		myName = newName;
 		arguments = new ArrayList<Variable>();
-		
+		if (SJavaFile.isReservedName(myName))
+			throw new IllegalMethodNameException("The name '" + myName + "' is reserved.");
 		for(String arg : newArguments){
 			if (!Pattern.compile("\\S").matcher(arg).find()) /////////////////////////////////////////////////////
 				continue;
@@ -36,9 +37,12 @@ public class Method extends InnerScope {
 	
 	@Override
 	public void readScope() throws IllegalCodeException {
+		if (myContent.size() == 0)
+			throw new IllegalMethodException("No return statement found");
 		String lastLine = myContent.get(myContent.size() - 1);
 		if (!SJavaFile.isExactMatch(ValidLine.RETURN_STATEMENT.getPattern(),lastLine)) {
-			throw new IllegalMethodException(); // If no return; found in the pre-last line of the method
+			// If no return; found in the pre-last line of the method
+			throw new IllegalMethodException("No return statement found"); 
 		}
 		super.readScope();
 	}

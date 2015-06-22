@@ -12,12 +12,5 @@ public class UnbalancedBracketsException extends IllegalCodeException {
 	public UnbalancedBracketsException() {
 		super("Unbalanced brackets in file");
 	}
-	
-	/**
-	 * Constructs a new exception specifying the line number.
-	 */
-	public UnbalancedBracketsException(int lineNum) {
-		super("Unbalanced bracket token in line: " + lineNum);
-	}
 
 }

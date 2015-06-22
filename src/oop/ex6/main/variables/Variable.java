@@ -1,10 +1,10 @@
 package oop.ex6.main.variables;
 
 import java.util.regex.*;
+import oop.ex6.main.SJavaFile;
 
 /**
  * This class represents a variable in the code.
- * @author Ran
  *
  */
 public class Variable {
@@ -22,17 +22,9 @@ public class Variable {
 		myName = newName;
 		myType = newType;
 		Matcher nameMatch = VariableType.getNamePattern().matcher(newName);
-		if (!nameMatch.matches()) {
+		if (!nameMatch.matches() || SJavaFile.isReservedName(newName)) {
 			throw new BadVariableNameException(newName);
 		}
-	}
-	
-	Variable(Variable oldVar) {
-		myName = oldVar.getName();
-		myType = oldVar.getType();
-		myVal = oldVar.myVal;
-		isFinal = oldVar.isFinal;
-		isInit = oldVar.isInit;
 	}
 	
 	/**

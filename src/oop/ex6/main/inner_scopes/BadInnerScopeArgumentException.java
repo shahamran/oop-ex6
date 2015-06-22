@@ -14,6 +14,6 @@ public class BadInnerScopeArgumentException extends IllegalInnerScopeException {
 	 * @param badArg The argument.
 	 */
 	public BadInnerScopeArgumentException(ValidInnerScope scope, String badArg) {
-		super("Can't define '" + scope.toString() + "' block with the argument(s): " + badArg);
+		super("Can't define '" + scope.toString() + "' block with the argument: " + badArg);
 	}
 }

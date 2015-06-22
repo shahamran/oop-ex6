@@ -4,11 +4,13 @@ import java.util.*;
 import java.util.regex.*;
 
 import oop.ex6.main.inner_scopes.methods.*;
+import oop.ex6.main.variables.VariableType;
 
 /**
  * This is the main "class" for the SJava file - Accepts only method and variable definitions.
  */
 public class SJavaFile extends Scope {
+	public static final String[] RESERVED_WORDS = {"void","return","if","while","true","false"};
 	private List<Method> myMethods = new ArrayList<Method>();		
 	
 	/**
@@ -46,17 +48,13 @@ public class SJavaFile extends Scope {
 			}
 			// Handle variable line
 			if (isMatch(ValidLine.VARIABLE_LINE.getPattern(),line) != null) {
-				try {
-					boolean isDefined = super.handleVariableLine(line);
-					if (!isDefined)
-						throw new IllegalCodeException("Can only define variables in global scope!");
-					continue;
-				} catch (IllegalCodeException e) {
-					throw new IllegalCodeException(i,line, e.getMessage());
-				}
+				boolean isDefined = super.handleVariableLine(line);
+				if (!isDefined)
+					throw new IllegalCodeException("Can only define variables in global scope!");
+				continue;				
 			}
 			// If not one of the following:
-			throw new IllegalCodeException(i, line);
+			throw new IllegalCodeException(line, "This line is not a valid global scope line.");
 		} // For loop ends here.
 		if (bracketCount != 0)
 			throw new UnbalancedBracketsException();
@@ -82,7 +80,7 @@ public class SJavaFile extends Scope {
 			myMethods.add(newMethod);
 			return;
 		} else {
-			throw new UnbalancedBracketsException(lineNum);
+			throw new UnbalancedBracketsException();
 		}
 	}	
 
@@ -127,6 +125,22 @@ public class SJavaFile extends Scope {
 				return m;
 		}
 		return null;
+	}
+	
+	/**
+	 * @param name The name to check
+	 * @return True if the given name is reserved, false otherwise.
+	 */
+	public static boolean isReservedName(String name) {
+		for (String reserved : SJavaFile.RESERVED_WORDS) {
+			if (reserved.equals(name))
+				return true;
+		}
+		for (VariableType type : VariableType.values()) {
+			if (type.toString().equals(name))
+				return true;
+		}
+		return false;
 	}
 	
 }

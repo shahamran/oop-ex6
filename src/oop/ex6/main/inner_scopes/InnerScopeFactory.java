@@ -9,6 +9,9 @@ import oop.ex6.main.Scope;
 import oop.ex6.main.variables.Variable;
 import oop.ex6.main.variables.VariableType;
 
+/**
+ * This class creates inner scope objects.
+ */
 public class InnerScopeFactory {
 	private static Pattern firstLinePattern = Pattern.compile("^\\s*(\\w+)\\s*" + InnerScope.ARGS_LINE
 																				+ "\\{\\s*$");

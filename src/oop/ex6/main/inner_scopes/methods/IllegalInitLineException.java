@@ -1,6 +1,5 @@
 package oop.ex6.main.inner_scopes.methods;
 
-
 public class IllegalInitLineException extends IllegalMethodException {
 
 

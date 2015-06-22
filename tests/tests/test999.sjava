@@ -1,4 +1,5 @@
-}
-void foo() {
-
+String b = "a";
+void foo(int a) {
+foo(b);
+return;
 }
