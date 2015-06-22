@@ -29,8 +29,9 @@ public class VariableFactory {
 		if (SJavaFile.isMatch(lineEndPattern, lineStr) == null) {
 			// If a line doesn't end properly (without ;), throw an exception
 			throw new BadVariableLineException(lineStr);
+		} else {
+			lineStr = trimString(lineEndPattern, lineStr); // Remove the ; from the line
 		}
-		lineStr = trimString(lineEndPattern, lineStr); // Remove the ; from the line
 		boolean finalVar = isFinal(lineStr);
 		if (finalVar) // Remove the 'final' from the line
 			lineStr = trimString(VariableType.getTypePattern(), lineStr); 
@@ -150,17 +151,14 @@ public class VariableFactory {
 						currVariable.setValue(variable.getValue());
 						break;
 					}
-				}
+				} // If not found, throw an exception
+				throw e;
 			} // Try - catch ends here
 			if (currVariable == null)
-				throw new VariableException(); // Shouldn't be reached.
-			// Check for name overloading.
-			if (parentScope.getVariables().get(currVariable.getName()) != null) {
-				throw new VariableNameOverloadException(currVariable.getName());
-			}
+				throw new VariableException(); // Shouldn't be reached.	
 			if (isFinal) { // Set as constant if needed.
 				if (currVariable.getValue() != null)
-					currVariable.setFinal();
+					currVariable.setFinal(); /////////////////////////////////////////////////////
 			} 
 			variablesList.add(currVariable);
 			currVariable = null;

@@ -32,11 +32,13 @@ public class Sjavac {
 	
 	private static void handleCodeException(IllegalCodeException e) {
 		System.out.println(ILLEGAL_CODE);
-		System.err.println(e.getMessage());
+		e.printStackTrace();
+		//System.err.println(e.getMessage());
 	}
 
 	private static void handleError(Exception e) {
 		System.out.println(ERROR_STR);
-		System.err.println(e.getMessage());
+		e.printStackTrace();
+		//System.err.println(e.getMessage());
 	}
 }

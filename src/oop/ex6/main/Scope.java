@@ -1,7 +1,6 @@
 package oop.ex6.main;
 
 import java.util.*;
-
 import oop.ex6.main.variables.*;
 
 /**
@@ -53,11 +52,11 @@ public abstract class Scope {
 	 * @throws VariableException If the line given was not a valid variable line, or if there has been
 	 * an attempt to create more than one variable with the same name.
 	 */
-	protected void handleVariableLine(String line,Scope varScope) throws VariableException {
-		List<Variable> newVariables = VariableFactory.parseVariableLine(line, varScope);
+	protected void handleVariableLine(String line) throws VariableException {
+		List<Variable> newVariables = VariableFactory.parseVariableLine(line, this);
 		if (newVariables != null) {
 			for (Variable var : newVariables) {
-				varScope.getVariables().put(var.getName(), var);
+				this.getVariables().put(var.getName(), var);
 			}
 		}
 	}
@@ -71,22 +70,34 @@ public abstract class Scope {
 	 * of the variable.
 	 * @throws VariableException 
 	 */
-	public Variable getVariable(String varName) throws VariableException{
-		Variable theVar = this.getVariables().get(varName);
-		if (theVar != null)
-			return theVar; 
-		Scope theScope = this.getParent();
+	public Variable getVariable(String varName) throws VariableException {
+		Scope theScope = this;
+		Variable theVar = null;
 		while (theScope != null) {
 			theVar = theScope.getVariables().get(varName);
 			if (theVar != null) {
-				break;
-			} else {
-				theScope = theScope.getParent();
+				if (theScope == getAncestor(this)) {
+					return VariableFactory.copyVariable(theVar); // Check if global.
+				} else {
+					return theVar;
+				}
 			}
+			theScope = theScope.getParent();
 		}
-		if (theVar == null)
-			return theVar;
-		return VariableFactory.copyVariable(theVar);
+		return theVar;
+	}
+	
+	/**
+	 * The outmost scope for all inner scopes is always a SJavaFile object. This method returns it.
+	 * @param scope The scope to check.
+	 * @return The outermost parent scope for this scope (ancestor).
+	 */
+	public static SJavaFile getAncestor(Scope scope) {
+		Scope currScope = scope;
+		while (currScope.getParent() != null) {
+			currScope = currScope.getParent();
+		}
+		return (SJavaFile) currScope;
 	}
 	
 	/**
@@ -95,7 +106,7 @@ public abstract class Scope {
 	 * @param oldContent The List of Strings to trim.
 	 * @return The trimmed List of Strings.
 	 */
-	protected static List<String> trimContent(List<String> oldContent) {
+	public static List<String> trimContent(List<String> oldContent) {
 		int n = oldContent.size();
 		List<String> newContent;
 		if (n > 1) {

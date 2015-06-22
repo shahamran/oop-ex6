@@ -5,13 +5,14 @@ import java.util.regex.*;
 
 import oop.ex6.main.IllegalCodeException;
 import oop.ex6.main.SJavaFile;
+import oop.ex6.main.Scope;
 import oop.ex6.main.variables.Variable;
 import oop.ex6.main.variables.VariableType;
 
 public class InnerScopeFactory {
 	private static Pattern firstLinePattern = Pattern.compile("^\\s*(\\w+)\\s*" + InnerScope.ARGS_LINE
 																				+ "\\{\\s*$");
-	private static final String SEPERATOR = "(?:\\|\\|)|(?:&&)";
+	private static final String SEPERATOR = "\\s*(?:(?:\\|\\|)|(?:&&))\\s*";
 	enum ValidInnerScope{IF("if"),WHILE("while");
 		String myStr;
 		
@@ -25,7 +26,7 @@ public class InnerScopeFactory {
 	
 	public static InnerScope createInnerScope(InnerScope parentScope, List<String> content) 
 																		throws IllegalCodeException {
-		String firstLine = content.get(0);
+		String firstLine = content.get(0); /////////////////////////////////////////////////////////////////////////////
 		Matcher match = firstLinePattern.matcher(firstLine);
 		if (!match.matches()) {
 			throw new IllegalInnerScopeException(firstLine);
@@ -54,9 +55,9 @@ public class InnerScopeFactory {
 			}
 		}
 		List<String> newContent = null;
-		if (content.size() > 1) {
-			newContent = content.subList(1, content.size() - 1);
-		}
+		//if (content.size() > 1) {
+			newContent = Scope.trimContent(content);
+		//}
 		return new InnerScope(parentScope, newContent);
 	}
 }

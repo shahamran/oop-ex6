@@ -8,7 +8,7 @@ import oop.ex6.main.inner_scopes.methods.*;
 public class SJavaFile extends Scope {
 	private List<Method> myMethods = new ArrayList<Method>();		
 
-	enum ValidLine{VARIABLE_INIT("^[A-Za-z]+"),METHOD_START("\\{\\s*$"), METHOD_END("^\\s*\\}\\s*$");
+	enum ValidLine{VARIABLE_INIT("^\\s*[A-Za-z]+"),METHOD_START("\\{\\s*$"), METHOD_END("^\\s*\\}\\s*$");
 		Pattern myPattern;
 
 		ValidLine(String regex) {
@@ -56,7 +56,7 @@ public class SJavaFile extends Scope {
 			
 			if (isMatch(ValidLine.VARIABLE_INIT.getPattern(),line) != null) {
 				try {
-					super.handleVariableLine(line, this);
+					super.handleVariableLine(line);
 					continue;
 				} catch (IllegalCodeException e) {
 					throw new IllegalCodeException(i,line, e.getMessage());

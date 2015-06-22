@@ -15,7 +15,6 @@ public class Test {
 	
 	
 	public static void main(String[] args) {
-		Sjavac mainFile = new Sjavac(); // Your Sjavac file!
 		Scanner userInput = new Scanner(System.in);
 		System.out.println("Enter a test number to run a specific test,\n" +
 						   "or enter 'all' to run all tests:");
@@ -39,7 +38,7 @@ public class Test {
 				System.out.println();
 			String[] currTest = tests.get(i);
 			System.out.print(".");
-			runTest(currTest, mainFile);
+			runTest(currTest);
 		}
 		System.out.println("Failed " + failed + " tests");
 		System.out.println("Finish.");
@@ -70,8 +69,7 @@ public class Test {
 		}
 	}
 	
-	@SuppressWarnings("static-access")
-	private static void runTest(String[] testLine, Sjavac mainFile) {
+	private static void runTest(String[] testLine) {
 		String fileName = testLine[0],expectedResult = testLine[1], msg = testLine[2],
 			   actualResult = "", err = "";		
 		PrintStream origOut = System.out;
@@ -83,7 +81,7 @@ public class Test {
 			/////Start reading\\\\
 			
 			String[] pathName = {TEST_LOCATION + fileName};
-			mainFile.main(pathName);
+			Sjavac.main(pathName);
 			actualResult = outContent.toString();
 			Matcher m = Pattern.compile("(\\S)").matcher(actualResult);
 			actualResult = m.find() ? m.group(1) : actualResult;
@@ -95,6 +93,7 @@ public class Test {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 		if  (!expectedResult.equals(actualResult)) {
 			System.out.println("\nTest:" + fileName + "\nDescription:" + msg);
 			System.err.println("Expected: " + expectedResult +". Got: " + actualResult);
@@ -102,6 +101,5 @@ public class Test {
 			failed++;
 			//System.exit(0);
 		}
-		
 	}
 }

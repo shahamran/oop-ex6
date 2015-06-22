@@ -9,7 +9,7 @@ import oop.ex6.main.inner_scopes.methods.Method;
 public class InnerScope extends Scope {
 	public static final String ARGS_LINE =  "\\((.*)\\)\\s*";
 	public static Pattern argsPattern = Pattern.compile(ARGS_LINE);
-	protected enum ValidLine{SCOPE_START("\\{\\s*$"), SCOPE_END("^\\s*\\}\\s*$"),
+	protected enum ValidLine{SCOPE_START("\\s*\\{\\s*$"), SCOPE_END("^\\s*\\}\\s*$"),
 						     METHOD_CALL("^\\s*[A-Za-z]\\w*\\s*\\(.*\\)\\s*;$"), VARIABLE_LINE(";\\s*$"),
 						     RETURN_STATEMENT("^\\s*return\\s*;\\s*$");
 		Pattern myPattern;
@@ -47,6 +47,9 @@ public class InnerScope extends Scope {
 				continue;
 			}
 			
+			if (bracketCount > 0)
+				continue;
+			
 			if (SJavaFile.isExactMatch(ValidLine.METHOD_CALL.getPattern(),line)) {
 				Method.handleMethodCall(line, getAncestor(this));
 				continue;
@@ -57,7 +60,7 @@ public class InnerScope extends Scope {
 			}
 			
 			if (isMatch(ValidLine.VARIABLE_LINE.getPattern(),line)) {
-				super.handleVariableLine(line, this);
+				super.handleVariableLine(line);
 				continue;
 			}
 			// If non of the above was met, this is not a valid line.
@@ -75,29 +78,18 @@ public class InnerScope extends Scope {
 	 * @throws IllegalCodeException
 	 */
 	private void handleInnerScope(int i, String line) throws IllegalCodeException {
-		if (bracketCount > 1) {
-			bracketCount--;
-		} else if (bracketCount == 1) {
-			bracketCount--;
-			InnerScope inS = InnerScopeFactory.createInnerScope(this,myContent.subList(scopeStart,i));
+		bracketCount--;
+		if (bracketCount > 0) {
+			return;
+		} else if (bracketCount == 0) {
+			InnerScope inS = InnerScopeFactory.createInnerScope(this,myContent.subList(scopeStart,i+1));
 			inS.readScope(); // Read once created, to check if legal.
 		} else {
 			throw new IllegalCodeException(line); // Unbalanced brackets.
 		}
+		
 	}
 	
-	/**
-	 * The outmost scope for all inner scopes is always a SJavaFile object. This method returns it.
-	 * @param scope The scope to check.
-	 * @return The outermost parent scope for this scope (ancestor).
-	 */
-	public static SJavaFile getAncestor(InnerScope scope) {
-		Scope currScope = scope;
-		while (currScope.getParent() != null) {
-			currScope = currScope.getParent();
-		}
-		return (SJavaFile) currScope;
-	}
 	
 	private static boolean isMatch(Pattern p, String s) {
 		return p.matcher(s).find();
