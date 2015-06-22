@@ -78,6 +78,28 @@ variables definition or methods definition, and creates new objects accordingly.
 Methods are read one by one. Inside the method legal content are simple inner scopes, or variable activity,
 or method calls. If inner scopes are found while reading they are read as soon as created.
 
+
+FLOAT
+Our design allows us to add new variable type (ex. float) quite easily : new enum to VariableType class
+FLOAT("float", "some float regex"). Where "some float regex" represents the regex that will capture
+float values correctly when compiled.
+ 
+ 
+SWITCH
+To add support for switch statements we would create new package Switch and inside 
+ -Switch.class- new subclass of InnerScope class, that will override parent's method readScope() and specify
+ 				it for it's syntax
+ -SwitchFactory.class - factory for this types of inner scopes
+ -SwitchExceptions - exceptions that occur when syntax is not legal
+ 
+IMPORT
+Every SJavaFile is started with
+HashMap<String, Variable> myVariables
+List<Method> myMethods
+ When read, SJavaFile will start from looking for import lines in the beginning and file path. If found:
+ this.myVariables.addAll(other.myVariables);
+ this.myMehtods.addAll(other.myMethods)
+
 =============================
 =  Implementation details   =
 =============================
@@ -104,10 +126,25 @@ UnbalancedBracketsException		InnerScopeException:	   VariablesException:
 REGULAR EXPRESSIONS
 
 ValidType.DOUBLE:
-	"double","\\s*(-?\\d+(?:\\.\\d+)?)\\s*"
+	"\\s*(-?\\d+(?:\\.\\d+)?)\\s*"
+- the pattern compiled from this regex is supposed to match any double in text.
+It can start with spaces(from zero), than the capturing group actually captures the double value:
+it can have or not have minus, followed by any amount(more then 1) of any digits 
+and after there can be or not be the group that starts with "." and followed by any
+amount of digits(more then 1).
+All this can be followed by spaces in amount >=0
+It can start with spaces(from zero), than the capturing group actually captures:
+ 
 Scope.ValidLine.METHOD_CALL: 	
+	"^\\s*[A-Za-z]\\w*\\s*\\(.*\\)\\s*;$"
+- the pattern compiled from this regex is supposed to match any method call in text.
+It can start with spaces(from zero), then there has to be method name which means it has to start with letter,
+and may be followed by anything from the list A-Z, a-z, 0-9,"_".
+Afterwards there may be spaces(from zero).
+Then it has to be followed by some expression inside the brackets().
+And the line has to end with ";"
+
 	
-		
 DATA STRUCTURES
 
 Every Scope holds data member myVariables - that saves all the variables created in this Scope. 
