@@ -18,7 +18,7 @@ public class VariableFactory {
 	 * If the line fits definition pattern, this method will return all variables defined.
 	 * Otherwise, if it was a valid variable assignment line, this method updates the variables changed.
 	 * If non of the above was met, an exception will be thrown.
-	 * Good lines example: - char myChar = '&'; - myChar = '#'; - char newChar = myChar; -
+	 * Good lines example: char myChar = '&'; | myChar = '#'; | char newChar = myChar;
 	 * @param lineStr The variable line string.
 	 * @param parentScope The scope object that called this method.
 	 * @return A list of variables created by this line, if it was a definition line, null otherwise.
@@ -65,12 +65,22 @@ public class VariableFactory {
 		return variable;
 	}
 	
-	public static Variable copyVariable(Variable toCopy) throws VariableException {
-		Variable newVar = new Variable(toCopy.getName(), toCopy.getType());
-		if (toCopy.isInit())
-			newVar.setValue(toCopy.getValue());
-		if (toCopy.isFinal())
-			newVar.setFinal();
+	/**
+	 * Creates a deep copy of a given variable object.
+	 * @param toCopy The variable object to copy
+	 * @return A deep copy of the given variable.
+	 */
+	public static Variable copyVariable(Variable toCopy) {
+		Variable newVar = null;
+		try {
+			newVar = new Variable(toCopy.getName(), toCopy.getType());
+			if (toCopy.isInit())
+				newVar.setValue(toCopy.getValue());
+			if (toCopy.isFinal())
+				newVar.setFinal();
+		} catch (Exception e) {
+			// Shouldn't be reached
+		}
 		return newVar;
 	}
 	

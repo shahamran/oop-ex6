@@ -18,7 +18,7 @@ public class Variable {
 	 * @param newType The variable's type (VariableType enum object)
 	 * @throws BadVariableNameException 
 	 */
-	public Variable(String newName, VariableType newType) throws BadVariableNameException {
+	Variable(String newName, VariableType newType) throws BadVariableNameException {
 		myName = newName;
 		myType = newType;
 		Matcher nameMatch = VariableType.getNamePattern().matcher(newName);
@@ -27,7 +27,7 @@ public class Variable {
 		}
 	}
 	
-	public Variable(Variable oldVar) {
+	Variable(Variable oldVar) {
 		myName = oldVar.getName();
 		myType = oldVar.getType();
 		myVal = oldVar.myVal;
@@ -53,18 +53,11 @@ public class Variable {
 	}
 	
 	/**
-	 * @return True if this variable was initialized, false otherwise.
-	 */
-	public boolean isInit() {
-		return isInit;
-	}
-	
-	/**
 	 * @param newVal The string of the value to assign
 	 * @throws VariableException Can be thrown either when trying to assign a value to a final (constant)
 	 * 							 or when trying to assign a value that this variable can't accept.
 	 */
-	public void setValue(String newVal) throws VariableException {
+	void setValue(String newVal) throws VariableException {
 		if (isFinal && isInit)
 			throw new AssignToFinalException();
 		if (newVal == null)
@@ -87,7 +80,7 @@ public class Variable {
 	 * Sets this variable to be a constant - which means that if it's initialized its value
 	 * can't be changed, and if its not, it can only be assigned.
 	 */
-	public void setFinal() {
+	void setFinal() {
 		isFinal = true;
 	}
 	
@@ -100,6 +93,13 @@ public class Variable {
 	 */
 	void setInit() {
 		isInit = true;
+	}
+	
+	/**
+	 * @return True if this variable was initialized, false otherwise.
+	 */
+	public boolean isInit() {
+		return isInit;
 	}
 	
 	/**

@@ -15,7 +15,7 @@ public class Method extends InnerScope {
 								 ARGS  = "\\((.*)\\)", LINE_END = "\\s*;\\s*$";
 	private static Pattern methodCallPattern = Pattern.compile(METHOD_NAME+ARGS+LINE_END);
 	
-	protected Method(String newName, String[] newArguments, SJavaFile newParent, List<String> newContent) 
+	Method(String newName, String[] newArguments, SJavaFile newParent, List<String> newContent) 
 																		throws IllegalCodeException{
 		super(newParent, newContent);
 		myName = newName;

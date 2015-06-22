@@ -10,7 +10,8 @@ import java.util.regex.Pattern;
  */
 public enum VariableType {INT("int","\\s*(-?\\d+)\\s*"),DOUBLE("double","\\s*(-?\\d+(?:\\.\\d+)?)\\s*"),
 						  CHAR("char","\\s*('.')\\s*"), STRING("String","\\s*(\".*\")\\s*"),
-						  BOOLEAN("boolean","\\s*((?:true|false)|(?:-?\\d+(?:\\.\\d+)?))\\s*"),FINAL("final");
+						  BOOLEAN("boolean","\\s*((?:true|false)|(?:-?\\d+(?:\\.\\d+)?))\\s*"),
+						  FINAL("final");
 	String varStr;
 	static final Pattern typePattern = Pattern.compile("^\\s*([A-Za-z]+)"),
 						 namePattern = Pattern.compile("\\s*((?:[A-Za-z]|_\\w)\\w*)\\s*");

@@ -5,66 +5,59 @@ import java.util.regex.*;
 
 import oop.ex6.main.inner_scopes.methods.*;
 
+/**
+ * This is the main "class" for the SJava file - Accepts only method and variable definitions.
+ */
 public class SJavaFile extends Scope {
 	private List<Method> myMethods = new ArrayList<Method>();		
-
-	enum ValidLine{VARIABLE_INIT("^\\s*[A-Za-z]+"),METHOD_START("\\{\\s*$"), METHOD_END("^\\s*\\}\\s*$");
-		Pattern myPattern;
-
-		ValidLine(String regex) {
-			myPattern = Pattern.compile(regex);
-		}
-		
-		Pattern getPattern() {
-			return myPattern;
-		}
-	}
 	
 	/**
-	 * 
-	 * @param newContent
+	 * Constructs a new global scope with the given content.
+	 * @param newContent The content of this scope.
 	 */
 	public SJavaFile(List<String> newContent) {
-		super(null,newContent);
+		super(null,newContent); // This parent is always null!
 	}
 	
 	/**
 	 * Method that parses content of the scope
 	 * and then reads inner scopes
-	 * 
 	 */
 	@Override
 	public void readScope() throws IllegalCodeException {
 		String line;
 		for (int i = 0; i < myContent.size(); i++) {
 			line = myContent.get(i);
-			if (isMatch(ValidLine.METHOD_START.getPattern(), line) != null) {
+			// Handle a scope start line.
+			if (isMatch(ValidLine.SCOPE_START.getPattern(), line) != null) {
 				if (bracketCount == 0)
 					scopeStart = i;
 				bracketCount++;
 				continue;
 			}
-			
-			if (bracketCount > 0) { //some inner scope is open
-				if (isMatch(ValidLine.METHOD_END.getPattern(),line) != null) {
+			// Check if some inner scope is open
+			if (bracketCount > 0) { 
+				if (isMatch(ValidLine.SCOPE_END.getPattern(),line) != null) {
 					handleMethodEnd(i, line);
 					continue;
 				} else {
 					continue;
 				}
 			}
-			
-			if (isMatch(ValidLine.VARIABLE_INIT.getPattern(),line) != null) {
+			// Handle variable line
+			if (isMatch(ValidLine.VARIABLE_LINE.getPattern(),line) != null) {
 				try {
-					super.handleVariableLine(line);
+					boolean isDefined = super.handleVariableLine(line);
+					if (!isDefined)
+						throw new IllegalCodeException("Can only define variables in global scope!");
 					continue;
 				} catch (IllegalCodeException e) {
 					throw new IllegalCodeException(i,line, e.getMessage());
 				}
 			}
-			// If not one of the following
+			// If not one of the following:
 			throw new IllegalCodeException(i, line);
-		}
+		} // For loop ends here.
 		if (bracketCount != 0)
 			throw new UnbalancedBracketsException();
 		// Actually reading
@@ -73,6 +66,13 @@ public class SJavaFile extends Scope {
 		}
 	}
 	
+	/**
+	 * This handles the event of finding a line that closes a scope ( } ) - 
+	 * either creation of a new method or just updating the brackets count.
+	 * @param lineNum The line number
+	 * @param line The line string
+	 * @throws IllegalCodeException Can be thrown by creation of new method or unbalanced brackets.
+	 */
 	private void handleMethodEnd(int lineNum, String line) throws IllegalCodeException {
 		bracketCount--;
 		if (bracketCount > 0) {
