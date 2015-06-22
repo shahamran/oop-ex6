@@ -6,23 +6,41 @@ import java.util.regex.*;
 import oop.ex6.main.*;
 import oop.ex6.main.inner_scopes.methods.Method;
 
+/**
+ * This object represents an inner scope in SJava files - which is every block of code, except the 
+ * class it self (which is SJavaFile object). This includes: Methods and If/While statements in our case.
+ */
 public class InnerScope extends Scope {
+	// This is used by MethodFactory module, that's why it's public.
 	public static final String ARGS_LINE =  "\\((.*)\\)\\s*";
 	public static Pattern argsPattern = Pattern.compile(ARGS_LINE);
+	
+	/**
+	 * Enum that holds a regex pattern for a valid line in an inner scope.
+	 * This includes: if/while statement start/end, method calls, variable lines, return statement.
+	 */
 	protected enum ValidLine{SCOPE_START("\\s*\\{\\s*$"), SCOPE_END("^\\s*\\}\\s*$"),
-						     METHOD_CALL("^\\s*[A-Za-z]\\w*\\s*\\(.*\\)\\s*;$"), VARIABLE_LINE(";\\s*$"),
+						     METHOD_CALL("^\\s*[A-Za-z]\\w*\\s*\\(.*\\)\\s*;$"), 
+						     VARIABLE_LINE(";\\s*$"),
 						     RETURN_STATEMENT("^\\s*return\\s*;\\s*$");
 		Pattern myPattern;
 	
 		ValidLine(String regex) {
 			myPattern = Pattern.compile(regex);
 		}
-		
+		/**
+		 * @return The pattern to check if the line of string matches this kind of line
+		 */
 		public Pattern getPattern() {
 			return myPattern;
 		}
-	}
+	} // Enum ends here
 	
+	/**
+	 * Constructs a new inner scope object.
+	 * @param newParent The parent of this scope
+	 * @param newContent The content of this scope
+	 */
 	protected InnerScope(Scope newParent, List<String> newContent) {
 		super(newParent, newContent);
 	}
@@ -32,33 +50,33 @@ public class InnerScope extends Scope {
 	@Override
 	public void readScope() throws IllegalCodeException {
 		String line;
-		for (int i = 0; i < myContent.size() ; i++) {
-			line = myContent.get(i);
-			
+		for (int lineNum = 0; lineNum < myContent.size() ; lineNum++) {
+			line = myContent.get(lineNum);
+			// Handle scope start line (ends with { )
 			if (isMatch(ValidLine.SCOPE_START.getPattern(),line)) {
 				if (bracketCount == 0)
-					scopeStart = i;
+					scopeStart = lineNum;
 				bracketCount++;
 				continue;
 			}
-			
+			// Handle scope end line ( only } )			
 			if (isMatch(ValidLine.SCOPE_END.getPattern(),line)) {
-				handleInnerScope(i,line);
+				handleScopeEnd(lineNum);
 				continue;
 			}
-			
+			// If a bracket is open, skip this line.
 			if (bracketCount > 0)
 				continue;
-			
+			// Handle a method call line.
 			if (SJavaFile.isExactMatch(ValidLine.METHOD_CALL.getPattern(),line)) {
 				Method.handleMethodCall(line, getAncestor(this));
 				continue;
 			}
-			
+			// Handle return statement
 			if (SJavaFile.isExactMatch(ValidLine.RETURN_STATEMENT.getPattern(), line)) {
 				continue; // return; is a valid line inside every inner-scope.
 			}
-			
+			// Handle a variable line.
 			if (isMatch(ValidLine.VARIABLE_LINE.getPattern(),line)) {
 				super.handleVariableLine(line);
 				continue;
@@ -67,30 +85,37 @@ public class InnerScope extends Scope {
 			throw new IllegalCodeException(line);
 		} // For loop ends here.
 		if (bracketCount != 0)
-			throw new IllegalCodeException("Unbalanced brackets");
+			throw new UnbalancedBracketsException();
 
 	}
 	
 	/**
-	 * 
-	 * @param i
-	 * @param line
-	 * @throws IllegalCodeException
+	 * This method is called when reached a scope closing line.
+	 * @param lineNum The number of current line
+	 * @param line The string of this line.
+	 * @throws IllegalCodeException If a new inner scope is created by calling this, this method reads it
+	 * to check if it's valid. If not, this exception is thrown.
+	 * @throws UnbalancedBracketsException
 	 */
-	private void handleInnerScope(int i, String line) throws IllegalCodeException {
+	private void handleScopeEnd(int lineNum) throws UnbalancedBracketsException, IllegalCodeException {
 		bracketCount--;
 		if (bracketCount > 0) {
-			return;
+			return; // This means a set of brackets is still open, do nothing.
 		} else if (bracketCount == 0) {
-			InnerScope inS = InnerScopeFactory.createInnerScope(this,myContent.subList(scopeStart,i+1));
+			InnerScope inS = InnerScopeFactory.createInnerScope(this,
+																myContent.subList(scopeStart,lineNum+1));
 			inS.readScope(); // Read once created, to check if legal.
 		} else {
-			throw new IllegalCodeException(line); // Unbalanced brackets.
+			throw new UnbalancedBracketsException();
 		}
-		
 	}
 	
-	
+	/**
+	 * A simple helper method that checks if a given string matches a given pattern.
+	 * @param p The pattern to check
+	 * @param s The string to check
+	 * @return True if the string matches the pattern, false otherwise.
+	 */
 	private static boolean isMatch(Pattern p, String s) {
 		return p.matcher(s).find();
 	}

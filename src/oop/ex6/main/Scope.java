@@ -26,7 +26,7 @@ public abstract class Scope {
 	}
 	
 	/**
-	 * This method reads each line in this scope and checks it's validity.
+	 * This method reads each line in this scope and checks if it is a valid line.
 	 * @throws IllegalCodeException If invalid code is found in this scope.
 	 */
 	public abstract void readScope() throws IllegalCodeException;
@@ -49,35 +49,36 @@ public abstract class Scope {
 	 * Gets a variable line and adds all variables defined by it to this scope's list of variables.
 	 * If no variables were defined, this method does not change this scope's members.
 	 * @param line The string of the variable line.
-	 * @throws VariableException If the line given was not a valid variable line, or if there has been
-	 * an attempt to create more than one variable with the same name.
+	 * @return True if new variables were defined, false otherwise.
+	 * @throws VariableException If the line given was not a valid variable line.
 	 */
-	protected void handleVariableLine(String line) throws VariableException {
+	protected boolean handleVariableLine(String line) throws VariableException {
 		List<Variable> newVariables = VariableFactory.parseVariableLine(line, this);
 		if (newVariables != null) {
 			for (Variable var : newVariables) {
-				this.getVariables().put(var.getName(), var);
+				myVariables.put(var.getName(), var);
 			}
+			return true;
 		}
+		return false;
 	}
 	
 	/**
-	 * Searches for the variable initialized with given name in
+	 * Searches for the variable initialized with a given name in
 	 * this scope and all the outer ones.
 	 * @param varName name of the Variable we are looking for
-	 * @return the variable with such name or null if not found.
-	 * If in this scope, returns the variable object. If in outer scope, returns a deep copy
-	 * of the variable.
-	 * @throws VariableException 
+	 * @return The variable with such name or null if not found.
+	 * If in an inner scope, returns the variable object. If in SJava scope, returns a deep copy
+	 * of the variable (methods can't change global variables).
 	 */
-	public Variable getVariable(String varName) throws VariableException {
+	public Variable getVariable(String varName) {
 		Scope theScope = this;
 		Variable theVar = null;
 		while (theScope != null) {
 			theVar = theScope.getVariables().get(varName);
 			if (theVar != null) {
-				if (theScope == getAncestor(this)) {
-					return VariableFactory.copyVariable(theVar); // Check if global.
+				if (theScope == getAncestor(this)) { // If this scope is the outmost scope:
+					return VariableFactory.copyVariable(theVar); // then the variable is global
 				} else {
 					return theVar;
 				}
@@ -92,12 +93,12 @@ public abstract class Scope {
 	 * @param scope The scope to check.
 	 * @return The outermost parent scope for this scope (ancestor).
 	 */
-	public static SJavaFile getAncestor(Scope scope) {
+	protected static SJavaFile getAncestor(Scope scope) {
 		Scope currScope = scope;
 		while (currScope.getParent() != null) {
 			currScope = currScope.getParent();
 		}
-		return (SJavaFile) currScope;
+		return (SJavaFile) currScope; // Will always run. 
 	}
 	
 	/**
@@ -107,6 +108,8 @@ public abstract class Scope {
 	 * @return The trimmed List of Strings.
 	 */
 	public static List<String> trimContent(List<String> oldContent) {
+		if (oldContent == null)
+			return null;
 		int n = oldContent.size();
 		List<String> newContent;
 		if (n > 1) {

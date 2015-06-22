@@ -5,9 +5,15 @@ import java.util.regex.*;
 
 import oop.ex6.main.inner_scopes.methods.*;
 
+/**
+ * This is the main "class" for the SJava file - Accepts only method and variable definitions.
+ */
 public class SJavaFile extends Scope {
 	private List<Method> myMethods = new ArrayList<Method>();		
-
+	
+	/**
+	 * Enum that represents valid lines in SJava file
+	 */
 	enum ValidLine{VARIABLE_INIT("^\\s*[A-Za-z]+"),METHOD_START("\\{\\s*$"), METHOD_END("^\\s*\\}\\s*$");
 		Pattern myPattern;
 
@@ -56,7 +62,9 @@ public class SJavaFile extends Scope {
 			
 			if (isMatch(ValidLine.VARIABLE_INIT.getPattern(),line) != null) {
 				try {
-					super.handleVariableLine(line);
+					boolean isDefined = super.handleVariableLine(line);
+					if (!isDefined)
+						throw new IllegalCodeException("Can only define variables in global scope!");
 					continue;
 				} catch (IllegalCodeException e) {
 					throw new IllegalCodeException(i,line, e.getMessage());
