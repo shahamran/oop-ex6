@@ -1,6 +1,8 @@
 package oop.ex6.main;
 
 import java.util.*;
+import java.util.regex.Pattern;
+
 import oop.ex6.main.variables.*;
 
 /**
@@ -13,6 +15,26 @@ public abstract class Scope {
 	protected List<String> myContent;
 	protected HashMap<String, Variable> myVariables;
 	protected int bracketCount = 0, scopeStart;
+	
+	/**
+	 * This enum represents a valid line in every scope.
+	 */
+	protected enum ValidLine{SCOPE_START("\\s*\\{\\s*$"), SCOPE_END("^\\s*\\}\\s*$"),
+	     					 METHOD_CALL("^\\s*[A-Za-z]\\w*\\s*\\(.*\\)\\s*;$"), 
+	     					 VARIABLE_LINE(";\\s*$"), RETURN_STATEMENT("^\\s*return\\s*;\\s*$");
+		
+		Pattern myPattern;
+
+		ValidLine(String regex) {
+			myPattern = Pattern.compile(regex);
+		}
+		/**
+	 	* @return The pattern to check if the line of string matches this kind of line
+		*/
+		public Pattern getPattern() {
+			return myPattern;
+		}
+	} // Enum ends here
 	
 	/**
 	 * Constructs a new Scope object.

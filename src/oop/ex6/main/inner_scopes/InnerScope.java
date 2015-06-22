@@ -14,28 +14,7 @@ public class InnerScope extends Scope {
 	// This is used by MethodFactory module, that's why it's public.
 	public static final String ARGS_LINE =  "\\((.*)\\)\\s*";
 	public static Pattern argsPattern = Pattern.compile(ARGS_LINE);
-	
-	/**
-	 * Enum that holds a regex pattern for a valid line in an inner scope.
-	 * This includes: if/while statement start/end, method calls, variable lines, return statement.
-	 */
-	protected enum ValidLine{SCOPE_START("\\s*\\{\\s*$"), SCOPE_END("^\\s*\\}\\s*$"),
-						     METHOD_CALL("^\\s*[A-Za-z]\\w*\\s*\\(.*\\)\\s*;$"), 
-						     VARIABLE_LINE(";\\s*$"),
-						     RETURN_STATEMENT("^\\s*return\\s*;\\s*$");
-		Pattern myPattern;
-	
-		ValidLine(String regex) {
-			myPattern = Pattern.compile(regex);
-		}
-		/**
-		 * @return The pattern to check if the line of string matches this kind of line
-		 */
-		public Pattern getPattern() {
-			return myPattern;
-		}
-	} // Enum ends here
-	
+		
 	/**
 	 * Constructs a new inner scope object.
 	 * @param newParent The parent of this scope
