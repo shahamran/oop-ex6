@@ -13,8 +13,17 @@ public class Method extends InnerScope {
 	
 	private static final String  METHOD_NAME ="^\\s*([A-Za-z]\\w*)\\s*" ,
 								 ARGS  = "\\((.*)\\)", LINE_END = "\\s*;\\s*$";
-	private static Pattern methodCallPattern = Pattern.compile(METHOD_NAME+ARGS+LINE_END);
+	private static Pattern methodCallPattern = Pattern.compile(METHOD_NAME+ARGS+LINE_END),
+						   notAllWhitespacePattern = Pattern.compile("\\S");
 	
+	/**
+	 * Constructor
+	 * @param newName new method's name
+	 * @param newArguments new method's arguments as a list of strings
+	 * @param newParent SJavaFile in which method is defined
+	 * @param newContent the inner lines of the method scope
+	 * @throws IllegalCodeException
+	 */
 	Method(String newName, String[] newArguments, SJavaFile newParent, List<String> newContent) 
 																		throws IllegalCodeException{
 		super(newParent, newContent);
@@ -22,7 +31,7 @@ public class Method extends InnerScope {
 		arguments = new ArrayList<Variable>();
 		
 		for(String arg : newArguments){
-			if (!Pattern.compile("\\S").matcher(arg).find()) /////////////////////////////////////////////////////
+			if (!notAllWhitespacePattern.matcher(arg).find()) 
 				continue;
 			Variable newVar = VariableFactory.createArgumentVariable(arg,this);
 			arguments.add(newVar); 
@@ -71,7 +80,7 @@ public class Method extends InnerScope {
 			throw new IllegalMethodCallException(line); // whole line is not a proper method call
 		
 		name = match.group(1); args = match.group(2).split("\\s*,\\s*");
-		//catches separately methods name and the parametres
+		//catches separately methods name and the parameters
 		String[] emptyString = {};
 		args = args[0].equals("") ? emptyString : args;
 		Method theMethod = ancestor.getMethod(name);//looks for the method by its name in ancestors' methods
@@ -80,7 +89,7 @@ public class Method extends InnerScope {
 		}
 		
 		List<Variable> methodArgs = theMethod.getArgs();
-		if (methodArgs.size() != args.length) //not right amount of parametres is given
+		if (methodArgs.size() != args.length) //not right amount of parameters is given
 			throw new IllegalMethodCallException(line);
 		
 		Variable v, otherVar;
@@ -88,11 +97,11 @@ public class Method extends InnerScope {
 			v = methodArgs.get(i);
 			if (SJavaFile.isExactMatch(v.getType().getValuePattern(), args[i])) { //parameter fits argument
 				continue;
-			} else if ( (otherVar = theMethod.getVariable(args[i])) != null) { //found variable
-				if(v.getType()!= otherVar.getType()){
+			} else if ( (otherVar = theMethod.getVariable(args[i])) != null) { //found variable given
+				if(v.getType()!= otherVar.getType()){//variable doesn't fit the argument by type
 					throw new IllegalParamsException(line);
 				}
-				continue;
+				continue;//parameter fit the arguments
 			} else {
 				throw new IllegalMethodCallException(line);
 			}
