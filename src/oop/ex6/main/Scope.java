@@ -13,7 +13,7 @@ public abstract class Scope {
 	protected Scope myParent;
 	protected List<String> myContent;
 	protected HashMap<String, Variable> myVariables;
-	protected int bracketCount = 0, scopeStart = 0;
+	protected int bracketCount = 0, scopeStart;
 	
 	/**
 	 * Constructs a new Scope object.
@@ -53,20 +53,22 @@ public abstract class Scope {
 	 * @throws VariableException If the line given was not a valid variable line, or if there has been
 	 * an attempt to create more than one variable with the same name.
 	 */
-	protected void handleVariableLine(String line) throws VariableException {
-		List<Variable> newVariables = VariableFactory.parseVariableLine(line, this);
+	protected void handleVariableLine(String line,Scope varScope) throws VariableException {
+		List<Variable> newVariables = VariableFactory.parseVariableLine(line, varScope);
 		if (newVariables != null) {
 			for (Variable var : newVariables) {
-				myVariables.put(var.getName(), var);
+				varScope.getVariables().put(var.getName(), var);
 			}
 		}
 	}
 	
 	/**
 	 * Searches for the variable initialized with given name in
-	 * the scope and all the outer ones
+	 * this scope and all the outer ones.
 	 * @param varName name of the Variable we are looking for
-	 * @return the variable with such name or null if not found
+	 * @return the variable with such name or null if not found.
+	 * If in this scope, returns the variable object. If in outer scope, returns a deep copy
+	 * of the variable.
 	 * @throws VariableException 
 	 */
 	public Variable getVariable(String varName) throws VariableException{
@@ -85,5 +87,22 @@ public abstract class Scope {
 		if (theVar == null)
 			return theVar;
 		return VariableFactory.copyVariable(theVar);
+	}
+	
+	/**
+	 * Removes the first and last lines from a list of strings if the string has more than one line.
+	 * If it has only one line, returns an empty list of strings.
+	 * @param oldContent The List of Strings to trim.
+	 * @return The trimmed List of Strings.
+	 */
+	protected static List<String> trimContent(List<String> oldContent) {
+		int n = oldContent.size();
+		List<String> newContent;
+		if (n > 1) {
+			newContent = oldContent.subList(1, n - 1);
+		} else {
+			newContent = new ArrayList<String>();
+		}
+		return newContent;
 	}
 }

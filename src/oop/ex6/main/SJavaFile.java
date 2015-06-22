@@ -3,13 +3,10 @@ package oop.ex6.main;
 import java.util.*;
 import java.util.regex.*;
 
-import oop.ex6.main.inner_scopes.methods.Method;
-import oop.ex6.main.inner_scopes.methods.MethodFactory;
+import oop.ex6.main.inner_scopes.methods.*;
 
 public class SJavaFile extends Scope {
-	private List<Method> mySubScopes = new ArrayList<Method>();
-	private HashMap<String, Method> methodsList;
-		
+	private List<Method> myMethods = new ArrayList<Method>();		
 
 	enum ValidLine{VARIABLE_INIT("^[A-Za-z]+"),METHOD_START("\\{\\s*$"), METHOD_END("^\\s*\\}\\s*$");
 		Pattern myPattern;
@@ -29,20 +26,8 @@ public class SJavaFile extends Scope {
 	 */
 	public SJavaFile(List<String> newContent) {
 		super(null,newContent);
-		methodsList = new HashMap<String,Method>();
 	}
 	
-
-	/**
-	 * Method gets the methods defined in the scope
-	 * @return all the methods defined in this file
-	 */
-
-	public Map<String,Method> getMethods() {
-
-		return methodsList;
-	}
-
 	/**
 	 * Method that parses content of the scope
 	 * and then reads inner scopes
@@ -62,18 +47,8 @@ public class SJavaFile extends Scope {
 			
 			if (bracketCount > 0) { //some inner scope is open
 				if (isMatch(ValidLine.METHOD_END.getPattern(),line) != null) {
-					if (bracketCount > 1) {
-						bracketCount--;
-						continue;
-					} else if (this.bracketCount == 1) { //exactly one not closed scope left
-						Method method = MethodFactory.createMethod(this, myContent.subList(scopeStart,i+1));
-						methodsList.put(method.getName(), method);
-						mySubScopes.add(method);
-						bracketCount --;
-						continue;
-					} else {
-						throw new IllegalCodeException(i,line);
-					}
+					handleMethodEnd(i, line);
+					continue;
 				} else {
 					continue;
 				}
@@ -81,23 +56,35 @@ public class SJavaFile extends Scope {
 			
 			if (isMatch(ValidLine.VARIABLE_INIT.getPattern(),line) != null) {
 				try {
-					super.handleVariableLine(line);
+					super.handleVariableLine(line, this);
+					continue;
 				} catch (IllegalCodeException e) {
 					throw new IllegalCodeException(i,line, e.getMessage());
 				}
-				continue;
 			}
 			// If not one of the following
 			throw new IllegalCodeException(i, line);
 		}
 		if (bracketCount != 0)
-			throw new IllegalCodeException("Unbalanced brackets");
+			throw new UnbalancedBracketsException();
 		// Actually reading
-		for(Method method : mySubScopes){
+		for(Method method : myMethods){
 			method.readScope();
 		}
 	}
 	
+	private void handleMethodEnd(int lineNum, String line) throws IllegalCodeException {
+		bracketCount--;
+		if (bracketCount > 0) {
+			return;
+		} else if (bracketCount == 0) {
+			Method newMethod = MethodFactory.createMethod(this, myContent.subList(scopeStart, lineNum+1));
+			myMethods.add(newMethod);
+			return;
+		} else {
+			throw new UnbalancedBracketsException(lineNum);
+		}
+	}	
 
 	/**
 	 * Checks if a certain pattern matches a given string argument.
@@ -131,13 +118,15 @@ public class SJavaFile extends Scope {
 	}
 	
 	/**
-	 * 
 	 * @param methodName name of the method of interest
-	 * @return the Method with such name or null if none found
+	 * @return the Method object with such name or null if none found
 	 */
 	public Method getMethod(String methodName) {
-		return methodsList.get(methodName);
-		
+		for (Method m : myMethods) {
+			if (m.getName().equals(methodName))
+				return m;
+		}
+		return null;
 	}
 	
 }

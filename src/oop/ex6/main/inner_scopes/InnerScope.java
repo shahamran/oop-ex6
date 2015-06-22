@@ -3,9 +3,7 @@ package oop.ex6.main.inner_scopes;
 import java.util.List;
 import java.util.regex.*;
 
-import oop.ex6.main.IllegalCodeException;
-import oop.ex6.main.SJavaFile;
-import oop.ex6.main.Scope;
+import oop.ex6.main.*;
 import oop.ex6.main.inner_scopes.methods.Method;
 
 public class InnerScope extends Scope {
@@ -55,34 +53,44 @@ public class InnerScope extends Scope {
 			}
 			
 			if (SJavaFile.isExactMatch(ValidLine.RETURN_STATEMENT.getPattern(), line)) {
-				continue;
+				continue; // return; is a valid line inside every inner-scope.
 			}
 			
 			if (isMatch(ValidLine.VARIABLE_LINE.getPattern(),line)) {
-				super.handleVariableLine(line);
+				super.handleVariableLine(line, this);
 				continue;
 			}
-			// This means this is not a valid line.
+			// If non of the above was met, this is not a valid line.
 			throw new IllegalCodeException(line);
-		} // For ends here.
+		} // For loop ends here.
 		if (bracketCount != 0)
 			throw new IllegalCodeException("Unbalanced brackets");
 
 	}
 	
+	/**
+	 * 
+	 * @param i
+	 * @param line
+	 * @throws IllegalCodeException
+	 */
 	private void handleInnerScope(int i, String line) throws IllegalCodeException {
 		if (bracketCount > 1) {
 			bracketCount--;
 		} else if (bracketCount == 1) {
 			bracketCount--;
-			List<String> newContent = myContent.subList(scopeStart, i);
-			InnerScope is = InnerScopeFactory.createInnerScope(this, newContent);
-			is.readScope();
+			InnerScope inS = InnerScopeFactory.createInnerScope(this,myContent.subList(scopeStart,i));
+			inS.readScope(); // Read once created, to check if legal.
 		} else {
-			throw new IllegalCodeException(line);
+			throw new IllegalCodeException(line); // Unbalanced brackets.
 		}
 	}
 	
+	/**
+	 * The outmost scope for all inner scopes is always a SJavaFile object. This method returns it.
+	 * @param scope The scope to check.
+	 * @return The outermost parent scope for this scope (ancestor).
+	 */
 	public static SJavaFile getAncestor(InnerScope scope) {
 		Scope currScope = scope;
 		while (currScope.getParent() != null) {

@@ -14,12 +14,13 @@ public class Sjavac {
 			String fileName = args[0];
 			SJavaFile mainFile = new SJavaFile(FileParser.getFileContent(fileName));
 			mainFile.readScope();
-			handleValidCode();
+			handleValidCode(); // If no exception was thrown, this is a valid code.
 		} catch (IllegalSJavaFileException e) {
-			handleError(e);
-		} catch (IllegalCodeException e) {
-			handleCodeException(e);
+			handleError(e); // Handle unexpected errors - bad file, IO exeptions etc.
+		} catch (IllegalCodeException badCode) {
+			handleCodeException(badCode); // Handle bad code exceptions.
 		} catch (Exception e) { // Other unknown errors
+			//handleError(e);
 			e.printStackTrace();
 		}
 
