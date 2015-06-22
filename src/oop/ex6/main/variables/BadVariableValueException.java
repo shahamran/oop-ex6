@@ -1,9 +1,9 @@
 package oop.ex6.main.variables;
 
 /**
- * This is thrown when trying to assign a value to a variable that it can't accept.
- * @author Ran
- *
+ * This is thrown when trying to assign a value to a variable that it can't accept.<br>
+ * Holds the bad value string that caused this exception to be thrown, and the variable that tried
+ * to receive this value.
  */
 public class BadVariableValueException extends VariableException {
 	private static final long serialVersionUID = 1L;

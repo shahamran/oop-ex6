@@ -5,8 +5,6 @@ import java.util.regex.Pattern;
 /**
  * This represents a variable type in SJava. Each object has a string, some have
  * specific requirements for their values which is given by getSpecificPattern() method.
- * @author Ran
- *
  */
 public enum VariableType {INT("int","\\s*(-?\\d+)\\s*"),DOUBLE("double","\\s*(-?\\d+(?:\\.\\d+)?)\\s*"),
 						  CHAR("char","\\s*('.')\\s*"), STRING("String","\\s*(\".*\")\\s*"),

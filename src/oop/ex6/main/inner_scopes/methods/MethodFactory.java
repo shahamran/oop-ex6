@@ -40,18 +40,18 @@ public class MethodFactory {
 			if(nameMatch.find()){
 				params.add(lineMatch.group(2)); //first will be void, second - the name
 			}else{
-				throw new IllegalMethodNameException(); //shouldn't actually happen - already checked
+				throw new IllegalMethodNameException(line); //shouldn't actually happen - already checked
 			}
 			//looking for arguments
 			Matcher argsMatch = InnerScope.argsPattern.matcher(line);
 			if(argsMatch.find()){
 				params.add(argsMatch.group(1)); // should capture what is inside the brackets
 			}else{
-				throw new IllegalParamsException();
+				throw new IllegalParamsException(line);
 			}
 			
 		}else{
-			throw new IllegalInitLineException();
+			throw new IllegalInitLineException(line);
 		}
 		return params;	
 	}

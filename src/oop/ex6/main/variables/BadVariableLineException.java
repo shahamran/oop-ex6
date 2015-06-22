@@ -2,7 +2,6 @@ package oop.ex6.main.variables;
 
 /**
  * Thrown when a variable line fails to meet the SJava syntax
- * @author Ran
  */
 public class BadVariableLineException extends VariableException {
 	private static final long serialVersionUID = 1L;

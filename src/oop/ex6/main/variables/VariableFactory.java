@@ -167,8 +167,8 @@ public class VariableFactory {
 			if (currVariable == null)
 				throw new VariableException(); // Shouldn't be reached.	
 			if (isFinal) { // Set as constant if needed.
-				if (currVariable.getValue() != null)
-					currVariable.setFinal(); /////////////////////////////////////////////////////
+				if (currVariable.getValue() != null) // If no value was assigned, this throws an exception.
+					currVariable.setFinal();
 			} 
 			variablesList.add(currVariable);
 			currVariable = null;

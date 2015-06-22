@@ -14,8 +14,8 @@ public class IllegalCodeException extends SJavaException {
 	}
 	
 	/**
-	 * Constructs a new exception with a given message
-	 * @param msg The message
+	 * Constructs a new exception with a given message.
+	 * @param msg
 	 */
 	public IllegalCodeException(String msg) {
 		super(msg);
@@ -23,22 +23,12 @@ public class IllegalCodeException extends SJavaException {
 	
 	/**
 	 * Contructs a new exception specifying in what line something went wrong, and shows the line.
-	 * @param lineNum The line number
-	 * @param badLine The string of the bad line.
-	 */
-	public IllegalCodeException(int lineNum, String badLine) {
-		super("Error in line " + lineNum + ": " + badLine);
-	}
-	
-	/**
-	 * Contructs a new exception specifying in what line something went wrong, and shows the line.
 	 * Also prints an informative message
-	 * @param lineNum The line number
 	 * @param badLine The string of the bad line.
 	 * @param errMsg The informative message.
 	 */
-	public IllegalCodeException(int lineNum, String badLine, String errMsg) {
-		this(lineNum, badLine + ":\n" + errMsg);
+	public IllegalCodeException(String badLine, String errMsg) {
+		this(badLine + ":\n" + errMsg);
 	}
 	
 }

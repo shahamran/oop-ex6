@@ -2,7 +2,6 @@ package oop.ex6.main.variables;
 
 /**
  * This is thrown whenever trying to use un-initialized variable.
- * @author Ran
  */
 public class EmptyVariableException extends VariableException {
 	private static final long serialVersionUID = 1L;

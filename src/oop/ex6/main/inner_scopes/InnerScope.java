@@ -8,7 +8,7 @@ import oop.ex6.main.inner_scopes.methods.Method;
 
 /**
  * This object represents an inner scope in SJava files - which is every block of code, except the 
- * class it self (which is SJavaFile object). This includes: Methods and If/While statements in our case.
+ * class itself (which is SJavaFile object). This includes: Methods and If/While statements in our case.
  */
 public class InnerScope extends Scope {
 	// This is used by MethodFactory module, that's why it's public.
@@ -23,8 +23,6 @@ public class InnerScope extends Scope {
 	protected InnerScope(Scope newParent, List<String> newContent) {
 		super(newParent, newContent);
 	}
-	
-	
 	
 	@Override
 	public void readScope() throws IllegalCodeException {
@@ -61,7 +59,7 @@ public class InnerScope extends Scope {
 				continue;
 			}
 			// If non of the above was met, this is not a valid line.
-			throw new IllegalCodeException(line);
+			throw new IllegalCodeException(line, "Not a valid inner scope line.");
 		} // For loop ends here.
 		if (bracketCount != 0)
 			throw new UnbalancedBracketsException();
