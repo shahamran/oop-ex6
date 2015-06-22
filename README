@@ -70,6 +70,10 @@ The biggest Scope possible is SJavaFile. And there are two types of Inner Scopes
 If/While blocks = simple InnerScopes, can be read can not be called
 Methods = advanced inner scopes, can be called after defined once, have more reading specifics
 
+The Modularity of the chosen design allowed us to solved occured problems with reasonable effort,
+and also, as you will see below, allows us to add more functionality, if needed also without any critical
+design changes.
+
 Process:
 SJavac has the main method, gets the path to the file that is supposed to be checked.
 Calls for FileParser to parse the file's content into list of sensible lines(if valid at all)
